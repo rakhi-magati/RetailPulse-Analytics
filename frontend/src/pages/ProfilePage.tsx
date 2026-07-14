@@ -80,7 +80,7 @@ export default function ProfilePage() {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={5}>
-          <Paper variant="outlined" sx={{ p: 3, textAlign: "center" }}>
+          <Paper variant="outlined" sx={{ p: 5, textAlign: "center" }}>
             <Avatar
               sx={{
                 width: 80,
@@ -130,7 +130,7 @@ export default function ProfilePage() {
         </Grid>
 
         <Grid item xs={12} md={7}>
-          <Paper variant="outlined" sx={{ p: 3 }}>
+          <Paper variant="outlined" sx={{ p: 5 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Change Password
             </Typography>

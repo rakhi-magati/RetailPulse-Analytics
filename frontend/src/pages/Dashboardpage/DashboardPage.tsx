@@ -40,10 +40,14 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
+// import { useQuery } from "@tanstack/react-query";
+// import { useAuth } from "../context/AuthContext";
+// import { usersApi } from "../api/auth";
+import { useAuth } from "../../context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../context/AuthContext";
-import { usersApi } from "../api/auth";
-import RoleGuard from "../components/RoleGuard";
+import { usersApi } from "../../api/auth";
+import RoleGuard from "../../components/RoleGuard";
+import "./DashboardPage.css";
 
 const salesOverviewData = [
     { date: "01 May", revenue: 42000, orders: 21000 },

@@ -1,0 +1,304 @@
+/* ===============================
+   LOGIN PAGE
+================================ */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7fb;
+  padding: 24px;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 940px;
+  min-height: 560px;
+  display: flex;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(15, 21, 53, 0.15);
+}
+
+/* ===============================
+   LEFT PANEL
+================================ */
+
+.login-left {
+  width: 44%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    160deg,
+    #12183a 0%,
+    #1b1f4b 55%,
+    #2a2470 100%
+  );
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-logo-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c6bf0, #4f46e5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.login-logo-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+.login-logo-subtitle {
+  font-size: 11px !important;
+  color: rgba(255, 255, 255, .55);
+}
+
+/* ===============================
+   ILLUSTRATION
+================================ */
+
+.login-illustration {
+  position: relative;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-circle {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(124,107,240,.18);
+  filter: blur(4px);
+}
+
+.login-main-icon {
+  font-size: 96px !important;
+  z-index: 2;
+}
+
+.login-floating-top {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(79,70,229,.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-floating-bottom {
+  position: absolute;
+  left: 20px;
+  bottom: 30px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255,171,64,.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-heading {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  margin-bottom: 6px !important;
+}
+
+.login-description {
+  color: rgba(255,255,255,.65);
+}
+
+/* ===============================
+   RIGHT PANEL
+================================ */
+
+.login-right {
+  flex: 1;
+  background: #fff;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-title {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  color: #111827;
+}
+
+.login-subtitle {
+  color: #6b7280 !important;
+  margin-bottom: 30px !important;
+}
+
+/* ===============================
+   FORM
+================================ */
+
+.login-form {
+  width: 100%;
+}
+
+.login-label {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+}
+
+.login-field {
+  margin-bottom: 18px !important;
+}
+
+.login-field .MuiOutlinedInput-root {
+  border-radius: 12px;
+}
+
+.login-field .MuiOutlinedInput-root:hover fieldset {
+  border-color: #4f46e5;
+}
+
+.login-field .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #4f46e5;
+}
+
+.password-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.forgot-link {
+  color: #4f46e5 !important;
+  text-decoration: none !important;
+  font-size: 14px !important;
+}
+
+.forgot-link:hover {
+  text-decoration: underline !important;
+}
+
+.login-checkbox {
+  margin-top: 4px;
+}
+
+/* ===============================
+   BUTTON
+================================ */
+
+.login-button {
+  margin-top: 20px !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  background: #4f46e5 !important;
+  box-shadow: none !important;
+}
+
+.login-button:hover {
+  background: #4338ca !important;
+}
+
+/* ===============================
+   FOOTER
+================================ */
+
+.login-footer {
+  margin-top: 28px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.login-footer a {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ===============================
+   ALERT
+================================ */
+
+.login-alert {
+  margin-bottom: 20px !important;
+  border-radius: 12px !important;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media (max-width:960px) {
+
+.login-container {
+  flex-direction: column;
+  min-height: auto;
+}
+
+.login-left {
+  display: none;
+}
+
+.login-right {
+  padding: 32px;
+}
+
+}
+
+@media (max-width:600px) {
+
+.login-page {
+  padding: 0;
+}
+
+.login-container {
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100vh;
+}
+
+.login-right {
+  padding: 24px;
+}
+
+.login-title {
+  font-size: 28px !important;
+}
+
+.login-button {
+  padding: 11px !important;
+}
+
+}

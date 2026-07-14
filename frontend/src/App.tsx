@@ -1,11 +1,14 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import LoginPage from "./pages/LoginPage";
+// import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import DashboardPage from "./pages/DashboardPage";
+// import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
+// import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/Dashboardpage/DashboardPage";
+import LoginPage from "./pages/LoginPage/LoginPage";
 
 export default function App() {
   return (
