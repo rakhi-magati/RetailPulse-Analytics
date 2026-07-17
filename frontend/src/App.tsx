@@ -9,6 +9,8 @@ import NotFoundPage from "./pages/NotFoundPage";
 // import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/Dashboardpage/DashboardPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
+import CategoriesPage from "./pages/CategoriesPage";
+import ProductsPage from "./pages/ProductsPage";
 
 export default function App() {
   return (
@@ -20,6 +22,9 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          
         </Route>
       </Route>
 

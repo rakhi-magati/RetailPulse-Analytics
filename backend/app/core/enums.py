@@ -21,3 +21,38 @@ class AuditAction(str, Enum):
     USER_LOGOUT = "USER_LOGOUT"
     PASSWORD_CHANGED = "PASSWORD_CHANGED"
     TOKEN_REFRESHED = "TOKEN_REFRESHED"
+
+    # Category Management
+    CATEGORY_CREATED = "CATEGORY_CREATED"
+    CATEGORY_UPDATED = "CATEGORY_UPDATED"
+    CATEGORY_DELETED = "CATEGORY_DELETED"
+
+    # Product Management
+    PRODUCT_CREATED = "PRODUCT_CREATED"
+    PRODUCT_UPDATED = "PRODUCT_UPDATED"
+    PRODUCT_DELETED = "PRODUCT_DELETED"
+    PRODUCT_ACTIVATED = "PRODUCT_ACTIVATED"
+    PRODUCT_DEACTIVATED = "PRODUCT_DEACTIVATED"
+
+
+class CategoryStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+
+
+class ProductStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+
+
+class UnitOfMeasure(str, Enum):
+    PCS = "PCS"
+    KG = "KG"
+    GRAM = "GRAM"
+    LITRE = "LITRE"
+    ML = "ML"
+    BOX = "BOX"
+    PACK = "PACK"
+    DOZEN = "DOZEN"
+    METER = "METER"
+    UNIT = "UNIT"

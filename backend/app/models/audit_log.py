@@ -16,6 +16,11 @@ class AuditLog(Base):
 
     action = Column(String(255), nullable=False)
 
+    # Name of the entity the action was performed on (e.g. a product or
+    # category name). Optional because auth-related actions (login, etc.)
+    # don't operate on a named entity.
+    entity_name = Column(String(255), nullable=True)
+
     ip_address = Column(String(100), nullable=True)
 
     browser = Column(String(255), nullable=True)

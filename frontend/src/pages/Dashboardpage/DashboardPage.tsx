@@ -19,6 +19,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
+    Tooltip as MuiTooltip,
     Typography,
 } from "@mui/material";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
@@ -26,6 +27,12 @@ import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import { productsApi } from "../../api/catalog";
 import {
     Bar,
     BarChart,
@@ -40,9 +47,6 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-// import { useQuery } from "@tanstack/react-query";
-// import { useAuth } from "../context/AuthContext";
-// import { usersApi } from "../api/auth";
 import { useAuth } from "../../context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { usersApi } from "../../api/auth";
@@ -145,13 +149,68 @@ function StatCard({
     );
 }
 
+function CatalogStatCard({
+    icon,
+    label,
+    value,
+    iconColor,
+}: {
+    icon: ReactNode;
+    label: string;
+    value: string | number;
+    iconColor: "primary" | "success" | "error" | "info";
+}) {
+    return (
+        <Card variant="outlined" sx={{ height: "100%" }}>
+            <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box
+                    sx={{
+                        bgcolor: `${iconColor}.light`,
+                        color: `${iconColor}.main`,
+                        width: 46,
+                        height: 46,
+                        borderRadius: 2,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                    }}
+                >
+                    {icon}
+                </Box>
+                <Box>
+                    <Typography variant="body2" color="text.secondary">
+                        {label}
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                        {value}
+                    </Typography>
+                </Box>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function DashboardPage() {
     const { user } = useAuth();
+    const isAdmin = user?.role === "COMPANY_ADMIN" || user?.role === "SUPER_ADMIN";
 
     const { data: companyUsers, isLoading, isError } = useQuery({
         queryKey: ["company-users"],
         queryFn: usersApi.listCompanyUsers,
-        enabled: user?.role === "COMPANY_ADMIN" || user?.role === "SUPER_ADMIN",
+        enabled: isAdmin,
+    });
+
+    const {
+        data: catalogSummary,
+        isLoading: isCatalogLoading,
+        isFetching: isCatalogFetching,
+    } = useQuery({
+        queryKey: ["dashboard-summary"],
+        queryFn: productsApi.dashboardSummary,
+        enabled: isAdmin,
+        refetchInterval: 15000,
+        refetchOnWindowFocus: true,
     });
 
     return (
@@ -162,6 +221,80 @@ export default function DashboardPage() {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 Here's what's happening with {user?.company.name ?? "your business"} today.
             </Typography>
+
+            <RoleGuard allowedRoles={["COMPANY_ADMIN"]} fallback={null}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        Catalog Overview
+                    </Typography>
+                    <MuiTooltip title={isCatalogFetching ? "Syncing latest data…" : "Live — auto-refreshes every 15s"}>
+                        <Chip
+                            size="small"
+                            icon={
+                                <FiberManualRecordIcon
+                                    sx={{
+                                        fontSize: "10px !important",
+                                        color: isCatalogFetching ? "warning.main" : "success.main",
+                                    }}
+                                />
+                            }
+                            label={isCatalogFetching ? "Syncing…" : "Live"}
+                            variant="outlined"
+                            sx={{ fontWeight: 600 }}
+                        />
+                    </MuiTooltip>
+                </Box>
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        {isCatalogLoading ? (
+                            <Skeleton variant="rounded" height={82} />
+                        ) : (
+                            <CatalogStatCard
+                                icon={<Inventory2OutlinedIcon />}
+                                label="Total Products"
+                                value={catalogSummary?.total_products ?? 0}
+                                iconColor="primary"
+                            />
+                        )}
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        {isCatalogLoading ? (
+                            <Skeleton variant="rounded" height={82} />
+                        ) : (
+                            <CatalogStatCard
+                                icon={<CheckCircleOutlineIcon />}
+                                label="Active Products"
+                                value={catalogSummary?.active_products ?? 0}
+                                iconColor="success"
+                            />
+                        )}
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        {isCatalogLoading ? (
+                            <Skeleton variant="rounded" height={82} />
+                        ) : (
+                            <CatalogStatCard
+                                icon={<CancelOutlinedIcon />}
+                                label="Inactive Products"
+                                value={catalogSummary?.inactive_products ?? 0}
+                                iconColor="error"
+                            />
+                        )}
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        {isCatalogLoading ? (
+                            <Skeleton variant="rounded" height={82} />
+                        ) : (
+                            <CatalogStatCard
+                                icon={<CategoryOutlinedIcon />}
+                                label="Total Categories"
+                                value={catalogSummary?.total_categories ?? 0}
+                                iconColor="info"
+                            />
+                        )}
+                    </Grid>
+                </Grid>
+            </RoleGuard>
 
             <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>

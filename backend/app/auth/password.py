@@ -1,24 +1,22 @@
 from passlib.context import CryptContext
 
-# bcrypt configuration
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
 )
 
-
 def hash_password(password: str) -> str:
-    """
-    Convert plain password to hashed password
-    """
+    print("HASH PASSWORD:", password)
+    print("HASH LENGTH:", len(password))
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verify plain password with hashed password
-    """
-    return pwd_context.verify(
-        plain_password,
-        hashed_password
-    )
+    print("=" * 80)
+    print("VERIFY CALLED")
+    print("PLAIN PASSWORD:", repr(plain_password))
+    print("PLAIN PASSWORD LENGTH:", len(plain_password))
+    print("HASHED PASSWORD:", hashed_password)
+    print("=" * 80)
+
+    return pwd_context.verify(plain_password, hashed_password)
