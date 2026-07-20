@@ -20,60 +20,59 @@ from app.services.audit_service import log_action
 
 
 def register_company(db: Session, data):
-    try:
-        if company_repository.get_by_email(db, data.company_email):
-            raise HTTPException(
-                status_code=409,
-                detail="Company email already exists",
-            )
-
-        if user_repository.get_by_email(db, data.owner_email):
-            raise HTTPException(
-                status_code=409,
-                detail="User email already exists",
-            )
-
-        if data.password != data.confirm_password:
-            raise HTTPException(
-                status_code=400,
-                detail="Passwords do not match",
-            )
-
-        new_company = Company(
-            name=data.company_name,
-            industry=data.industry,
-            email=data.company_email,
-            address=data.company_address,
-            phone=data.company_phone,
+    if company_repository.get_by_email(db, data.company_email):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Company email already exists",
         )
 
-        db.add(new_company)
-        db.commit()
-        db.refresh(new_company)
-
-        new_user = User(
-            company_id=new_company.id,
-            name=data.owner_name,
-            email=data.owner_email,
-            password=hash_password(data.password),
-            role="COMPANY_ADMIN",
-            status=UserStatus.ACTIVE,
+    if user_repository.get_by_email(db, data.owner_email):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User email already exists",
         )
 
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
+    if data.password != data.confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match",
+        )
 
-        return {
-            "success": True,
-            "message": "Success"
-        }
+    new_company = Company(
+        name=data.company_name,
+        industry=data.industry,
+        email=data.company_email,
+        address=data.company_address,
+        phone=data.company_phone,
+    )
+    db.add(new_company)
+    db.commit()
+    db.refresh(new_company)
 
-    except Exception as e:
-        db.rollback()
-        import traceback
-        traceback.print_exc()   # 👈 prints full error in terminal
-        raise HTTPException(status_code=500, detail=str(e))
+    new_user = User(
+        company_id=new_company.id,
+        name=data.owner_name,
+        email=data.owner_email,
+        password=hash_password(data.password),
+        role="COMPANY_ADMIN",
+        status=UserStatus.ACTIVE,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    log_action(
+        db,
+        company_id=new_company.id,
+        user_id=new_user.id,
+        action=AuditAction.COMPANY_REGISTERED,
+    )
+
+    return {
+        "success": True,
+        "message": "Company registered successfully",
+        "company_id": new_company.id,
+    }
 
 
 def _issue_tokens(db: Session, user: User) -> dict:

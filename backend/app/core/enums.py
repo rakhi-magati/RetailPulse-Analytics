@@ -34,6 +34,13 @@ class AuditAction(str, Enum):
     PRODUCT_ACTIVATED = "PRODUCT_ACTIVATED"
     PRODUCT_DEACTIVATED = "PRODUCT_DEACTIVATED"
 
+    # Sales Management
+    SALE_CREATED = "SALE_CREATED"
+    SALE_UPDATED = "SALE_UPDATED"
+    SALE_DELETED = "SALE_DELETED"
+    INVENTORY_UPDATED = "INVENTORY_UPDATED"
+    PRODUCT_OUT_OF_STOCK = "PRODUCT_OUT_OF_STOCK"
+
 
 class CategoryStatus(str, Enum):
     ACTIVE = "ACTIVE"
@@ -56,3 +63,21 @@ class UnitOfMeasure(str, Enum):
     DOZEN = "DOZEN"
     METER = "METER"
     UNIT = "UNIT"
+
+
+class SalesChannel(str, Enum):
+    RETAIL_STORE = "RETAIL_STORE"
+    ONLINE_STORE = "ONLINE_STORE"
+    MARKETPLACE = "MARKETPLACE"
+
+
+class PaymentMethod(str, Enum):
+    CASH = "CASH"
+    CARD = "CARD"
+    UPI = "UPI"
+    BANK_TRANSFER = "BANK_TRANSFER"
+
+
+class NotificationType(str, Enum):
+    LOW_STOCK = "LOW_STOCK"
+    OUT_OF_STOCK = "OUT_OF_STOCK"

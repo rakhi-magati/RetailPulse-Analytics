@@ -44,11 +44,13 @@ class Product(Base):
     cost_price = Column(Numeric(12, 2), nullable=False)
 
     stock_quantity = Column(Integer, nullable=False, default=0)
+    
+    low_stock_threshold = Column(Integer, nullable=False, default=10)
 
     unit_of_measure = Column(
-        SqlEnum(UnitOfMeasure, native_enum=False, length=20),
-        default=UnitOfMeasure.PCS,
-        nullable=False,
+         SqlEnum(UnitOfMeasure, native_enum=False, length=20),
+         default=UnitOfMeasure.PCS,
+         nullable=False,
     )
 
     status = Column(
