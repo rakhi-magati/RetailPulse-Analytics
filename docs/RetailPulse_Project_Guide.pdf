@@ -1,0 +1,571 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R] /Count 8 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 2171 >>
+stream
+0.97 0.98 1 rg 0 0 595 842 re f
+31.000 78.000 121.000 rg
+BT /F2 30 Tf 1 0 0 1 48 700 Tm (RetailPulse Analytics) Tj ET
+75.000 85.000 99.000 rg
+BT /F1 16 Tf 1 0 0 1 48 665 Tm (Project overview, important topics, and system flows) Tj ET
+0.86 0.88 0.93 RG 0.7 w 48 640.0 m 547 640.0 l S
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 595 Tm (Purpose) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 11 Tf 1 0 0 1 48 794 Tm (RetailPulse is a multi-tenant retail management and analytics application. It lets each) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 11 Tf 1 0 0 1 48 779 Tm (company manage its catalog, stock, sales, alerts, and analytics while keeping company data) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 11 Tf 1 0 0 1 48 764 Tm (isolated.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 729 Tm (Technology at a glance) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 704 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 704 Tm (Frontend: React 19, TypeScript, Vite, Material UI, TanStack Query, Axios,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 691 Tm (Recharts.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 676 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 676 Tm (Backend: FastAPI, SQLAlchemy ORM, Pydantic schemas, JWT authentication, and) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 663 Tm (MySQL-compatible configuration.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 648 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 648 Tm (Cross-cutting concerns: role access control, automatic token refresh, audit) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 635 Tm (logging, inventory movements, and notifications.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 604 Tm (Reading map) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 579 Tm (Start with the architecture and access model, then follow the sales and inventory flows.) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 565.5 Tm (The analytics section explains how operational data becomes dashboard insights and) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 552.0 Tm (exports.) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 3919 >>
+stream
+0.97 0.98 1 rg 0 0 595 842 re f
+31.000 78.000 121.000 rg
+BT /F2 20 Tf 1 0 0 1 48 794 Tm (1. System architecture) Tj ET
+0.86 0.88 0.93 RG 0.7 w 48 781.0 m 547 781.0 l S
+75.000 85.000 99.000 rg
+BT /F1 10 Tf 1 0 0 1 48 763 Tm (Browser client and API server communicate over JSON. The API owns authorization and data) Tj ET
+75.000 85.000 99.000 rg
+BT /F1 10 Tf 1 0 0 1 48 749 Tm (access.) Tj ET
+0.93 0.95 1 rg 48 724 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 731 Tm (React pages and reusable UI components) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 704 Tm (v) Tj ET
+0.93 0.95 1 rg 48 687 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 694 Tm (API client adds JWT access token; interceptor refreshes expired tokens) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 667 Tm (v) Tj ET
+0.93 0.95 1 rg 48 650 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 657 Tm (FastAPI routers validate requests and enforce role dependencies) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 630 Tm (v) Tj ET
+0.93 0.95 1 rg 48 613 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 620 Tm (Services apply business rules, write audit events, and coordinate modules) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 593 Tm (v) Tj ET
+0.93 0.95 1 rg 48 576 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 583 Tm (Repositories / SQLAlchemy models read and write company-scoped database records) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 554 Tm (Frontend responsibilities) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 536 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 536 Tm (Routes: login, registration, dashboard, analytics, categories, products, sales,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 523 Tm (inventory, and profile.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 508 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 508 Tm (AuthContext loads /auth/me at startup, exposes the user, login, logout, and) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 495 Tm (refresh-profile actions.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 480 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 480 Tm (ProtectedRoute redirects unauthenticated visitors to login. RoleGuard hides) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 467 Tm (restricted screens or actions.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 452 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 452 Tm (TanStack Query fetches and caches server data; the analytics dashboard refreshes) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 439 Tm (itself every 30 seconds.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 424 Tm (Backend layering) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 406 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 406 Tm (api/: HTTP endpoints, query parameters, request metadata, and FastAPI dependency) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 393 Tm (injection.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 378 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 378 Tm (services/: domain behavior such as token rotation, price calculations, stock) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 365 Tm (movements, and report export.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 350 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 350 Tm (repositories/: filtered database queries and aggregate analytics queries.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 335 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 335 Tm (models/ and schemas/: persistent table definitions and validated request/response) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 322 Tm (contracts.) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 3454 >>
+stream
+0.97 0.98 1 rg 0 0 595 842 re f
+31.000 78.000 121.000 rg
+BT /F2 20 Tf 1 0 0 1 48 794 Tm (2. Tenant isolation and access control) Tj ET
+0.86 0.88 0.93 RG 0.7 w 48 781.0 m 547 781.0 l S
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 763 Tm (Tenant boundary) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 745 Tm (Every user belongs to a Company. Protected endpoints derive company_id from the) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 731.5 Tm (authenticated JWT user rather than trusting a client-provided company ID. Products,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 718.0 Tm (categories, sales, inventory, notifications, and audit events are queried within that) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 704.5 Tm (company scope.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 691.0 Tm (Roles) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 673.0 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 673.0 Tm (COMPANY_ADMIN: full operational control. Can manage categories and products,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 660.0 Tm (adjust stock, set reorder levels, and view analytics.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 645.0 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 645.0 Tm (ANALYST: can browse products and inventory, create/manage sales, view) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 632.0 Tm (notifications, and use analytics. Cannot alter catalog or manual stock settings.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 617.0 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 617.0 Tm (SUPER_ADMIN: dependency helper grants this role access to every role-restricted) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 604.0 Tm (endpoint.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 589.0 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 589.0 Tm (VIEWER exists as a role enum but is not granted access by the current feature) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 576.0 Tm (routers.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 561.0 Tm (Authentication flow) Tj ET
+0.93 0.95 1 rg 48 538.0 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 545.0 Tm (Company registration creates the Company and its first COMPANY_ADMIN user.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 518.0 Tm (v) Tj ET
+0.93 0.95 1 rg 48 501.0 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 508.0 Tm (Login validates the password and active status, then issues access and refresh JWTs.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 481.0 Tm (v) Tj ET
+0.93 0.95 1 rg 48 464.0 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 471.0 Tm (Frontend stores both tokens in localStorage and sends the access token as Bearer authorization.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 444.0 Tm (v) Tj ET
+0.93 0.95 1 rg 48 427.0 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 434.0 Tm (On a 401, Axios queues requests, calls /auth/refresh once, rotates tokens, and retries queued requests.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 407.0 Tm (v) Tj ET
+0.93 0.95 1 rg 48 390.0 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 397.0 Tm (Logout revokes the submitted refresh token; password change revokes all refresh tokens for the user.) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 2975 >>
+stream
+0.97 0.98 1 rg 0 0 595 842 re f
+31.000 78.000 121.000 rg
+BT /F2 20 Tf 1 0 0 1 48 794 Tm (3. Core data model) Tj ET
+0.86 0.88 0.93 RG 0.7 w 48 781.0 m 547 781.0 l S
+75.000 85.000 99.000 rg
+BT /F1 10 Tf 1 0 0 1 48 763 Tm (The model is centered on a company-owned retail catalog and the transactions that change) Tj ET
+75.000 85.000 99.000 rg
+BT /F1 10 Tf 1 0 0 1 48 749 Tm (stock.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 729 Tm (Main relationships) Tj ET
+0.93 0.95 1 rg 48 706 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 713 Tm (Company -> Users, Categories, Products, Sales, Inventory, Notifications, Audit Logs) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 686 Tm (v) Tj ET
+0.93 0.95 1 rg 48 669 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 676 Tm (Category -> Products \(a company cannot repeat a category name\)) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 649 Tm (v) Tj ET
+0.93 0.95 1 rg 48 632 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 639 Tm (Product -> one Inventory record and many Sale Items \(SKU is unique within a company\)) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 612 Tm (v) Tj ET
+0.93 0.95 1 rg 48 595 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 602 Tm (Sale -> many Sale Items \(invoice number is unique within a company\)) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 575 Tm (v) Tj ET
+0.93 0.95 1 rg 48 558 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 565 Tm (Inventory -> many immutable Inventory Movements) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 536 Tm (Important business fields) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 518 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 518 Tm (Product: category, SKU, brand, selling and cost price, stock_quantity,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 505 Tm (low_stock_threshold, unit, and active/inactive status.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 490 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 490 Tm (Inventory: current, reserved, and available stock; reorder level; calculated) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 477 Tm (status: IN_STOCK, LOW_STOCK, or OUT_OF_STOCK.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 462 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 462 Tm (Sale: invoice, customer, date, channel, payment method, subtotal, discount, tax,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 449 Tm (total, and individual item lines.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 434 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 434 Tm (Operational traceability: AuditLog stores who did what, when, where \(IP/browser\),) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 421 Tm (and optionally the target name. InventoryMovement records every quantity change.) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 2995 >>
+stream
+0.97 0.98 1 rg 0 0 595 842 re f
+31.000 78.000 121.000 rg
+BT /F2 20 Tf 1 0 0 1 48 794 Tm (4. Catalog and inventory flows) Tj ET
+0.86 0.88 0.93 RG 0.7 w 48 781.0 m 547 781.0 l S
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 763 Tm (Catalog lifecycle) Tj ET
+0.93 0.95 1 rg 48 740 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 747 Tm (Admin creates a category; duplicate names are rejected within the company.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 720 Tm (v) Tj ET
+0.93 0.95 1 rg 48 703 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 710 Tm (Admin creates a product with its category, SKU, prices, opening stock, threshold, and status.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 683 Tm (v) Tj ET
+0.93 0.95 1 rg 48 666 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 673 Tm (Product service keeps a matching inventory record and synchronizes reorder settings.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 646 Tm (v) Tj ET
+0.93 0.95 1 rg 48 629 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 636 Tm (Direct product stock edits are represented as a manual inventory movement.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 609 Tm (v) Tj ET
+0.93 0.95 1 rg 48 592 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 599 Tm (Category/product mutations are audit logged; products can be activated or deactivated.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 570 Tm (Manual stock adjustment) Tj ET
+0.93 0.95 1 rg 48 547 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 554 Tm (Admin selects stock-in, stock-out, or corrected-count adjustment and supplies a reason.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 527 Tm (v) Tj ET
+0.93 0.95 1 rg 48 510 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 517 Tm (Service validates that stock cannot become negative and stock-out cannot exceed availability.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 490 Tm (v) Tj ET
+0.93 0.95 1 rg 48 473 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 480 Tm (Product.stock_quantity and Inventory current/available amounts are kept synchronized.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 453 Tm (v) Tj ET
+0.93 0.95 1 rg 48 436 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 443 Tm (A movement row, audit event, and possible low/out-of-stock notification are created.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 414 Tm (Inventory views) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 396 Tm (The inventory page supports filtering by product/SKU, category, brand, and stock status;) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 382.5 Tm (it also shows summary cards, category/status charts, and movement history. Admins see) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 369.0 Tm (adjustment and reorder controls; analysts have read access and history access.) Tj ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 16 0 R >>
+endobj
+16 0 obj
+<< /Length 2656 >>
+stream
+0.97 0.98 1 rg 0 0 595 842 re f
+31.000 78.000 121.000 rg
+BT /F2 20 Tf 1 0 0 1 48 794 Tm (5. Sales to inventory flow) Tj ET
+0.86 0.88 0.93 RG 0.7 w 48 781.0 m 547 781.0 l S
+75.000 85.000 99.000 rg
+BT /F1 10 Tf 1 0 0 1 48 763 Tm (This is the most important cross-module operational flow.) Tj ET
+0.93 0.95 1 rg 48 738 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 745 Tm (Admin or Analyst starts a sale and adds one or more product line items.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 718 Tm (v) Tj ET
+0.93 0.95 1 rg 48 701 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 708 Tm (The service loads each product inside the caller company and combines duplicate requested quantities.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 681 Tm (v) Tj ET
+0.93 0.95 1 rg 48 664 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 671 Tm (It validates all item availability before applying any deduction, so an unfulfillable multi-item sale fails as a whole.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 644 Tm (v) Tj ET
+0.93 0.95 1 rg 48 627 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 634 Tm (For each line, total = \(unit price x quantity - discount\) + tax. Header totals are calculated from the lines.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 607 Tm (v) Tj ET
+0.93 0.95 1 rg 48 590 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 597 Tm (The service generates a company-scoped invoice such as INV-YYYY-000001 and persists the sale plus SaleItems.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 570 Tm (v) Tj ET
+0.93 0.95 1 rg 48 553 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 560 Tm (Stock is reduced, a SALE inventory movement and audit log are recorded, and threshold crossings create notifications.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 11 Tf 1 0 0 1 286 533 Tm (v) Tj ET
+0.93 0.95 1 rg 48 516 499 22 re f
+31.000 41.000 55.000 rg
+BT /F2 9.5 Tf 1 0 0 1 57 523 Tm (Updating or deleting a sale restores prior stock first, then reapplies the edited sale if appropriate.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 494 Tm (Sales filters and reporting dimensions) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 476 Tm (Sales can be searched by invoice, customer, or product and filtered by dates, category,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 462.5 Tm (channel, and payment method. Supported channels are retail store, online store, and) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 449.0 Tm (marketplace; payment methods are cash, card, UPI, and bank transfer.) Tj ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 18 0 R >>
+endobj
+18 0 obj
+<< /Length 2893 >>
+stream
+0.97 0.98 1 rg 0 0 595 842 re f
+31.000 78.000 121.000 rg
+BT /F2 20 Tf 1 0 0 1 48 794 Tm (6. Analytics, notifications, and exports) Tj ET
+0.86 0.88 0.93 RG 0.7 w 48 781.0 m 547 781.0 l S
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 763 Tm (Analytics dashboard) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 745 Tm (Company Admins and Analysts can apply date, product, category, brand, sales-channel, and) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 731.5 Tm (payment-method filters. Dates, revenue, and sales trends support daily, weekly, or monthly) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 718.0 Tm (granularity.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 704.5 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 704.5 Tm (KPIs: total revenue, orders, products sold, average order value, inventory value,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 691.5 Tm (low stock count, out of stock count, and category count.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 676.5 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 676.5 Tm (Visuals: revenue/sales trends, top products/categories, payment/channel mix,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 663.5 Tm (inventory distribution, stock status, inventory value, and low/out-of-stock lists.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 648.5 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 648.5 Tm (Drill-downs: clicking KPIs returns underlying sales/inventory records; categories) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 635.5 Tm (drill to products; products drill to transactions.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 620.5 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 620.5 Tm (Exports: /analytics/export produces CSV or PDF from the currently selected filters) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 607.5 Tm (and granularity.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 592.5 Tm (Notifications and audit) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 574.5 Tm (Inventory threshold transitions produce LOW_STOCK or OUT_OF_STOCK notifications. Users can) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 561.0 Tm (fetch notifications and mark them read. Authentication, catalog, sale, stock, dashboard) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 547.5 Tm (filter/view, and report-export actions are written to the audit log.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 534.0 Tm (API modules) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 516.0 Tm (/auth, /users, /categories, /products, /sales, /inventory, /notifications, and /analytics) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 502.5 Tm (are registered in FastAPI main.py. The health endpoint is /health.) Tj ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 20 0 R >>
+endobj
+20 0 obj
+<< /Length 3469 >>
+stream
+0.97 0.98 1 rg 0 0 595 842 re f
+31.000 78.000 121.000 rg
+BT /F2 20 Tf 1 0 0 1 48 794 Tm (7. Project navigation and operating notes) Tj ET
+0.86 0.88 0.93 RG 0.7 w 48 781.0 m 547 781.0 l S
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 763 Tm (Where to look in the repository) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 745 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 745 Tm (frontend/src/App.tsx: route map. api/client.ts: token injection and refresh.) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 732 Tm (context/AuthContext.tsx: session state.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 717 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 717 Tm (frontend/src/pages/: feature screens. AnalyticsDashboardPage uses charts, filters,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 704 Tm (drill-downs, refresh, and exports.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 689 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 689 Tm (backend/app/main.py: application startup, middleware, models, and router) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 676 Tm (registration.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 661 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 661 Tm (backend/app/api/: endpoint boundaries. services/: business logic. repositories/:) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 648 Tm (queries. models/: database relationships.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 633 Tm (Configuration and production considerations) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 615 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 615 Tm (Backend reads DATABASE_URL, SECRET_KEY, token lifetimes, and FRONTEND_ORIGIN from) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 602 Tm (environment variables. The code has development defaults; production should) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 589 Tm (provide secure values.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 574 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 574 Tm (The backend calls Base.metadata.create_all at startup. The source notes that) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 561 Tm (Alembic migrations should be used for production schema changes.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 10 Tf 1 0 0 1 48 546 Tm (-) Tj ET
+31.000 41.000 55.000 rg
+BT /F2 9.3 Tf 1 0 0 1 62 546 Tm (CORS currently permits the configured frontend origin with credentials. Keep the) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.3 Tf 1 0 0 1 62 533 Tm (origin explicit in deployed environments.) Tj ET
+79.000 70.000 229.000 rg
+BT /F2 13 Tf 1 0 0 1 48 518 Tm (End-to-end summary) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 500 Tm (RetailPulse begins with company onboarding and JWT-secured access. Admins establish) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 486.5 Tm (categories and products; analysts and admins capture sales. Each sale updates stock,) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 473.0 Tm (records movement/audit evidence, and may create a stock alert. Analytics then aggregates) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 459.5 Tm (the same company-scoped sales and inventory data into actionable KPIs, drill-downs, and) Tj ET
+31.000 41.000 55.000 rg
+BT /F1 9.5 Tf 1 0 0 1 48 446.0 Tm (exports.) Tj ET
+endstream
+endobj
+xref
+0 21
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000168 00000 n 
+0000000238 00000 n 
+0000000313 00000 n 
+0000000449 00000 n 
+0000002672 00000 n 
+0000002808 00000 n 
+0000006779 00000 n 
+0000006916 00000 n 
+0000010423 00000 n 
+0000010561 00000 n 
+0000013589 00000 n 
+0000013727 00000 n 
+0000016775 00000 n 
+0000016913 00000 n 
+0000019622 00000 n 
+0000019760 00000 n 
+0000022706 00000 n 
+0000022844 00000 n 
+trailer
+<< /Size 21 /Root 1 0 R >>
+startxref
+26366
+%%EOF

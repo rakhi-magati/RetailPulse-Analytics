@@ -48,6 +48,7 @@ class SaleItemOut(BaseModel):
 
 class SaleBase(BaseModel):
     customer_name: str = Field(..., min_length=1, max_length=255)
+    customer_id: Optional[int] = None
     sale_date: Optional[datetime] = None
     sales_channel: SalesChannel
     payment_method: PaymentMethod
@@ -74,6 +75,7 @@ class SaleCreate(SaleBase):
 
 class SaleUpdate(BaseModel):
     customer_name: Optional[str] = Field(None, min_length=1, max_length=255)
+    customer_id: Optional[int] = None
     sale_date: Optional[datetime] = None
     sales_channel: Optional[SalesChannel] = None
     payment_method: Optional[PaymentMethod] = None
@@ -102,6 +104,7 @@ class SaleOut(BaseModel):
     company_id: int
     invoice_number: str
     customer_name: str
+    customer_id: Optional[int] = None
     sale_date: datetime
     sales_channel: SalesChannel
     payment_method: PaymentMethod
@@ -122,6 +125,7 @@ class SaleListOut(BaseModel):
     id: int
     invoice_number: str
     customer_name: str
+    customer_id: Optional[int] = None
     sale_date: datetime
     sales_channel: SalesChannel
     payment_method: PaymentMethod

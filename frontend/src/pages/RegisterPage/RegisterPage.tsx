@@ -1,3 +1,4 @@
+import './RegisterPage.css';
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -14,8 +15,8 @@ import {
     Typography,
 } from "@mui/material";
 import StoreIcon from "@mui/icons-material/Store";
-import { authApi } from "../api/auth";
-import type { CompanyRegisterRequest } from "../types/auth";
+import { authApi } from "../../api/auth";
+import type { CompanyRegisterRequest } from "../../types/auth";
 import { isAxiosError } from "axios";
 
 const INDUSTRIES = [
@@ -114,7 +115,7 @@ export default function RegisterPage() {
                         COMPANY DETAILS
                     </Typography>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
                                 label="Company Name"
@@ -126,7 +127,7 @@ export default function RegisterPage() {
                                 helperText={errors.company_name?.message}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
                                 select
@@ -143,7 +144,7 @@ export default function RegisterPage() {
                                 ))}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
                                 type="email"
@@ -159,7 +160,7 @@ export default function RegisterPage() {
                                 helperText={errors.company_email?.message}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
                                 label="Company Phone Number"
@@ -170,7 +171,7 @@ export default function RegisterPage() {
                                 helperText={errors.company_phone?.message}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                             <TextField
                                 fullWidth
                                 label="Company Address"
@@ -189,7 +190,7 @@ export default function RegisterPage() {
                         ADMIN ACCOUNT
                     </Typography>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
                                 label="Owner Name"
@@ -198,7 +199,7 @@ export default function RegisterPage() {
                                 helperText={errors.owner_name?.message}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
                                 type="email"
@@ -214,7 +215,7 @@ export default function RegisterPage() {
                                 helperText={errors.owner_email?.message}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
                                 type="password"
@@ -227,7 +228,7 @@ export default function RegisterPage() {
                                 helperText={errors.password?.message}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
                                 type="password"

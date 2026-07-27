@@ -1,3 +1,4 @@
+import './ProductsPage.css';
 import { useMemo, useState } from "react";
 import {
     Alert,
@@ -33,17 +34,17 @@ import EditIcon from "@mui/icons-material/EditOutlined";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
-import { categoriesApi, productsApi } from "../api/catalog";
-import RoleGuard from "../components/RoleGuard";
+import { categoriesApi, productsApi } from "../../api/catalog";
+import RoleGuard from "../../components/RoleGuard";
 // import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
-import type { UnitOfMeasure,Product,ProductCreateRequest,ProductStatus } from "../types/catalog";
+import type { UnitOfMeasure,Product,ProductCreateRequest,ProductStatus } from "../../types/catalog";
 // import type {
 //     UnitOfMeasure,
 //     Product,
 //     ProductCreateRequest,
 //     ProductStatus,
-// } from "../types/catalog";
+// } from "../../types/catalog";
 
 interface ProductFormValues {
     name: string;

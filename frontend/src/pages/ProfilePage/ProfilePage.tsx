@@ -1,3 +1,4 @@
+import './ProfilePage.css';
 import { useState } from "react";
 import {
   Alert,
@@ -13,9 +14,9 @@ import {
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { isAxiosError } from "axios";
-import { useAuth } from "../context/AuthContext";
-import { authApi } from "../api/auth";
-import type { ChangePasswordRequest } from "../types/auth";
+import { useAuth } from "../../context/AuthContext";
+import { authApi } from "../../api/auth";
+import type { ChangePasswordRequest } from "../../types/auth";
 
 function formatDate(value: string | null) {
   if (!value) return "Never";
@@ -79,7 +80,7 @@ export default function ProfilePage() {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Paper variant="outlined" sx={{ p: 5, textAlign: "center" }}>
             <Avatar
               sx={{
@@ -129,7 +130,7 @@ export default function ProfilePage() {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Paper variant="outlined" sx={{ p: 5 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Change Password

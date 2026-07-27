@@ -1,3 +1,4 @@
+import './SalesPage.css';
 import { useMemo, useState } from "react";
 import {
     Alert,
@@ -40,18 +41,18 @@ import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { categoriesApi, productsApi } from "../api/catalog";
-import { salesApi } from "../api/sales";
-import RoleGuard from "../components/RoleGuard";
-import type { Product } from "../types/catalog";
+import { categoriesApi, productsApi } from "../../api/catalog";
+import { salesApi } from "../../api/sales";
+import RoleGuard from "../../components/RoleGuard";
+import type { Product } from "../../types/catalog";
 // import type {
 //     PaymentMethod,
 //     SaleCreateRequest,
 //     SaleListItem,
 //     SalesChannel,
-// } from "../types/sales";
+// } from "../../types/sales";
 
-import type { PaymentMethod, SaleCreateRequest, SaleListItem, SalesChannel } from "../types/sales";
+import type { PaymentMethod, SaleCreateRequest, SaleListItem, SalesChannel } from "../../types/sales";
 
 interface ItemFormValues {
     product_id: number | "";

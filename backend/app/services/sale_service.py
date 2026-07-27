@@ -11,8 +11,10 @@ from app.models.notification import Notification
 from app.models.product import Product
 from app.models.sale import Sale, SaleItem
 from app.models.user import User
+from app.models.customer import Customer
 from app.repositories import notification_repository, product_repository, sale_repository
 from app.schemas.sale import SaleCreate, SaleItemCreate, SaleUpdate
+from app.services import inventory_service
 from app.services.audit_service import log_action
 
 MAX_INVOICE_RETRIES = 5
@@ -32,49 +34,6 @@ def _load_product_for_sale(db: Session, product_id: int, company_id: int) -> Pro
             detail=f"Product with id {product_id} does not exist for this company",
         )
     return product
-
-
-def _notify_stock_level(
-    db: Session,
-    company_id: int,
-    product: Product,
-    actor: User,
-    ip_address: str,
-    browser: str,
-) -> None:
-    """
-    Emits a notification (and audit entry, where applicable) when a
-    product's stock crosses the "out of stock" or "low stock" thresholds.
-    """
-    if product.stock_quantity <= 0:
-        notification_repository.create(
-            db,
-            Notification(
-                company_id=company_id,
-                product_id=product.id,
-                type=NotificationType.OUT_OF_STOCK,
-                message=f"{product.name} is now out of stock.",
-            ),
-        )
-        log_action(
-            db,
-            company_id=company_id,
-            user_id=actor.id,
-            action=AuditAction.PRODUCT_OUT_OF_STOCK,
-            ip_address=ip_address,
-            browser=browser,
-            entity_name=product.name,
-        )
-    elif product.stock_quantity <= (product.low_stock_threshold or 0):
-        notification_repository.create(
-            db,
-            Notification(
-                company_id=company_id,
-                product_id=product.id,
-                type=NotificationType.LOW_STOCK,
-                message=f"{product.name} stock is low ({product.stock_quantity} remaining).",
-            ),
-        )
 
 
 def _deduct_stock(
@@ -108,25 +67,27 @@ def _deduct_stock(
         product.stock_quantity -= requested_qty
         product_repository.update(db, product)
 
-        log_action(
-            db,
-            company_id=company_id,
-            user_id=actor.id,
-            action=AuditAction.INVENTORY_UPDATED,
-            ip_address=ip_address,
-            browser=browser,
-            entity_name=product.name,
-        )
-        _notify_stock_level(db, company_id, product, actor, ip_address, browser)
+        # Records the "Sale" movement against the Inventory module, logs the
+        # INVENTORY_UPDATED audit entry, and raises Low/Out-of-Stock
+        # notifications when the product crosses those thresholds.
+        inventory_service.apply_sale_movement(db, product, requested_qty, actor, ip_address, browser)
 
 
-def _restore_stock(db: Session, sale: Sale) -> None:
+def _restore_stock(
+    db: Session,
+    sale: Sale,
+    actor: Optional[User] = None,
+    ip_address: str = "unknown",
+    browser: str = "unknown",
+) -> None:
     """Reverses the stock deduction for every item on a sale (used on update/delete)."""
     for item in sale.items:
         product = db.query(Product).filter(Product.id == item.product_id).first()
         if product:
             product.stock_quantity += item.quantity
             product_repository.update(db, product)
+            if actor is not None:
+                inventory_service.apply_sale_reversal(db, product, actor, ip_address, browser)
 
 
 def _price_item(item: SaleItemCreate, product: Product) -> dict:
@@ -176,6 +137,13 @@ def create_sale(
 
     total_amount = (subtotal - discount_total) + tax_total
 
+    customer = None
+    if data.customer_id is not None:
+        customer = db.query(Customer).filter(Customer.id == data.customer_id, Customer.company_id == company_id).first()
+        if not customer:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Customer does not exist for this company")
+        if customer.status != "ACTIVE":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot record a sale for an inactive customer")
     invoice_number = None
     sale = None
     for attempt in range(MAX_INVOICE_RETRIES):
@@ -183,7 +151,8 @@ def create_sale(
         sale = Sale(
             company_id=company_id,
             invoice_number=invoice_number,
-            customer_name=data.customer_name,
+            customer_name=customer.full_name if customer else data.customer_name,
+            customer_id=customer.id if customer else None,
             sale_date=data.sale_date or datetime.now(timezone.utc),
             sales_channel=data.sales_channel,
             payment_method=data.payment_method,
@@ -228,6 +197,7 @@ def serialize_sale(sale: Sale) -> dict:
         "company_id": sale.company_id,
         "invoice_number": sale.invoice_number,
         "customer_name": sale.customer_name,
+        "customer_id": sale.customer_id,
         "sale_date": sale.sale_date,
         "sales_channel": sale.sales_channel,
         "payment_method": sale.payment_method,
@@ -268,6 +238,7 @@ def serialize_sale_list_item(sale: Sale) -> dict:
         "id": sale.id,
         "invoice_number": sale.invoice_number,
         "customer_name": sale.customer_name,
+        "customer_id": sale.customer_id,
         "sale_date": sale.sale_date,
         "sales_channel": sale.sales_channel,
         "payment_method": sale.payment_method,
@@ -325,6 +296,10 @@ def update_sale(
         sale.customer_name = data.customer_name
     if data.sale_date is not None:
         sale.sale_date = data.sale_date
+    if data.customer_id is not None:
+        customer = db.query(Customer).filter(Customer.id == data.customer_id, Customer.company_id == company_id).first()
+        if not customer: raise HTTPException(status_code=400, detail="Customer does not exist for this company")
+        sale.customer_id, sale.customer_name = customer.id, customer.full_name
     if data.sales_channel is not None:
         sale.sales_channel = data.sales_channel
     if data.payment_method is not None:
@@ -333,7 +308,7 @@ def update_sale(
     if data.items is not None:
         # Reverse the previous stock deduction, then re-validate and
         # re-deduct against the new set of line items.
-        _restore_stock(db, sale)
+        _restore_stock(db, sale, actor=actor, ip_address=ip_address, browser=browser)
 
         _deduct_stock(db, data.items, company_id, actor, ip_address, browser)
 
@@ -381,7 +356,7 @@ def delete_sale(
     sale = get_sale(db, sale_id, company_id)
     invoice_number = sale.invoice_number
 
-    _restore_stock(db, sale)
+    _restore_stock(db, sale, actor=actor, ip_address=ip_address, browser=browser)
 
     sale_repository.delete(db, sale)
 

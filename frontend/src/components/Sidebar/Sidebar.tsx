@@ -32,12 +32,12 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
-  { label: "Analytics", icon: <AnalyticsIcon />, path: "/dashboard" },
+  { label: "Analytics", icon: <AnalyticsIcon />, path: "/analytics" },
   { label: "Sales", icon: <SalesIcon />, path: "/sales" },
   { label: "Products", icon: <ProductsIcon />, path: "/products" },
   { label: "Categories", icon: <CategoriesIcon />, path: "/categories" },
-  { label: "Customers", icon: <CustomersIcon />, path: "/dashboard" },
-  { label: "Inventory", icon: <InventoryIcon />, path: "/dashboard" },
+  { label: "Customers", icon: <CustomersIcon />, path: "/customers" },
+  { label: "Inventory", icon: <InventoryIcon />, path: "/inventory" },
   { label: "Reports", icon: <ReportsIcon />, path: "/dashboard" },
   { label: "Alerts", icon: <AlertsIcon />, path: "/dashboard" },
   { label: "Users", icon: <UsersIcon />, path: "/dashboard" },

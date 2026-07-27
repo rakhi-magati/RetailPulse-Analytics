@@ -29,6 +29,7 @@ class Sale(Base):
     invoice_number = Column(String(50), nullable=False, index=True)
 
     customer_name = Column(String(255), nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True, index=True)
 
     sale_date = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
@@ -53,6 +54,7 @@ class Sale(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     company = relationship("Company")
+    customer = relationship("Customer", back_populates="sales")
     creator = relationship("User")
     items = relationship("SaleItem", back_populates="sale", cascade="all, delete-orphan")
 

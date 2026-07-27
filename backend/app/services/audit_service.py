@@ -8,7 +8,6 @@ from app.models.audit_log import AuditLog
 
 def log_action(
     db: Session,
-    *,
     company_id: int,
     user_id: int,
     action: AuditAction,

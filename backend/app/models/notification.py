@@ -16,7 +16,7 @@ class Notification(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
 
     type = Column(
-        SqlEnum(NotificationType, native_enum=False, length=20),
+        SqlEnum(NotificationType, native_enum=False, length=40),
         nullable=False,
     )
 

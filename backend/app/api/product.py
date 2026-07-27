@@ -19,8 +19,10 @@ from app.utils.request_meta import get_client_browser, get_client_ip
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
-# Product Management is an Admin-only module.
+# Product creation/editing/deletion is an Admin-only capability.
 AdminOnly = Depends(require_roles(UserRole.COMPANY_ADMIN))
+# Read-only product browsing is also needed by Analysts recording sales.
+ReadAccess = Depends(require_roles(UserRole.COMPANY_ADMIN, UserRole.ANALYST))
 
 
 @router.get("", response_model=List[ProductOut])
@@ -32,7 +34,7 @@ def list_products(
     sort_by: str = Query("recent", description="One of: name, price, recent"),
     db: Session = Depends(get_db),
     company_id: int = Depends(get_current_company_id),
-    _=AdminOnly,
+    _=ReadAccess,
 ):
     return product_service.list_products(
         db,
@@ -60,7 +62,7 @@ def get_product(
     product_id: int,
     db: Session = Depends(get_db),
     company_id: int = Depends(get_current_company_id),
-    _=AdminOnly,
+    _=ReadAccess,
 ):
     return product_service.get_product(db, product_id, company_id)
 

@@ -1,0 +1,98 @@
+﻿.analytics-dashboard-page {
+    min-height: 100%;
+}
+
+.analytics-dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.analytics-dashboard-title-row,
+.analytics-dashboard-filter-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analytics-dashboard-title,
+.analytics-dashboard-filter-title,
+.analytics-dashboard-section-title,
+.analytics-dashboard-card-title {
+    font-weight: 700 !important;
+}
+
+.analytics-dashboard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.analytics-dashboard-filters {
+    padding: 20px !important;
+    margin-bottom: 24px;
+}
+
+.analytics-dashboard-filter-heading {
+    margin-bottom: 16px;
+}
+
+.analytics-dashboard-grid {
+    margin-bottom: 24px;
+}
+
+.analytics-dashboard-section-title {
+    margin-bottom: 12px !important;
+}
+
+.analytics-dashboard-card {
+    height: 100%;
+    padding: 24px !important;
+}
+
+.analytics-dashboard-card-title {
+    margin-bottom: 16px !important;
+}
+
+.analytics-dashboard-empty-state {
+    padding-block: 40px;
+    text-align: center;
+}
+
+.analytics-dashboard-dialog-loading {
+    padding-block: 16px;
+}
+
+.analytics-dashboard-scroll-table {
+    max-height: 280px;
+}
+
+.analytics-dashboard-drilldown-table {
+    margin-top: 8px;
+}
+
+.analytics-dashboard-clickable-row {
+    cursor: pointer;
+}
+
+.analytics-dashboard-clickable-chart {
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .analytics-dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .analytics-dashboard-actions {
+        width: 100%;
+    }
+
+    .analytics-dashboard-actions .MuiButton-root {
+        flex: 1 1 auto;
+    }
+}

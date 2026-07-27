@@ -1,3 +1,4 @@
+import './CategoriesPage.css';
 import { useMemo, useState } from "react";
 import {
   Alert,
@@ -31,10 +32,10 @@ import EditIcon from "@mui/icons-material/EditOutlined";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
-import { categoriesApi } from "../api/catalog";
-import RoleGuard from "../components/RoleGuard";
-// import type { Category, CategoryCreateRequest } from "../types/catalog";
-import type { Category, CategoryCreateRequest } from "../types/catalog";
+import { categoriesApi } from "../../api/catalog";
+import RoleGuard from "../../components/RoleGuard";
+// import type { Category, CategoryCreateRequest } from "../../types/catalog";
+import type { Category, CategoryCreateRequest } from "../../types/catalog";
 
 interface CategoryFormValues {
   name: string;

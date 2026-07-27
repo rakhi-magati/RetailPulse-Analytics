@@ -8,6 +8,7 @@ from app.models.product import Product
 from app.models.user import User
 from app.repositories import category_repository, product_repository
 from app.schemas.product import ProductCreate, ProductUpdate
+from app.services import inventory_service
 from app.services.audit_service import log_action
 
 
@@ -85,6 +86,10 @@ def create_product(
     )
     product = product_repository.create(db, product)
 
+    # Every product gets a matching Inventory row so Stock Management and
+    # the Inventory dashboard have something to track from day one.
+    inventory_service.ensure_inventory_for_product(db, product)
+
     log_action(
         db,
         company_id=company_id,
@@ -146,10 +151,22 @@ def update_product(
     if data.status is not None and data.status != product.status:
         status_changed_to = data.status
 
+    stock_quantity_changed = (
+        data.stock_quantity is not None and data.stock_quantity != product.stock_quantity
+    )
+
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(product, field, value)
 
     product = product_repository.update(db, product)
+
+    # Keep the Inventory module's mirror of current stock in step whenever
+    # it's edited directly from the Products screen (reorder level itself
+    # is owned by the Inventory module's dedicated endpoint).
+    if stock_quantity_changed:
+        inventory_service.apply_product_edit_stock_change(
+            db, product, actor=actor, ip_address=ip_address, browser=browser
+        )
 
     if status_changed_to is not None:
         action = (
@@ -224,6 +241,7 @@ def delete_product(
 ) -> None:
     product = get_product(db, product_id, company_id)
     name = product.name
+    inventory_service.delete_for_product(db, product.id)
     product_repository.delete(db, product)
 
     log_action(
