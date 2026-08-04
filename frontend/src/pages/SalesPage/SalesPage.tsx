@@ -257,7 +257,14 @@ function SalesPageContent() {
         },
     });
 
+    // Dialog portals hide the page from assistive technology. Blur the trigger first so it is not left inside that hidden page.
+    const releaseTriggerFocus = () => {
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLElement) activeElement.blur();
+    };
+
     const openCreateDialog = () => {
+        releaseTriggerFocus();
         setEditing(null);
         reset(emptyValues);
         setErrorMessage(null);
@@ -265,6 +272,7 @@ function SalesPageContent() {
     };
 
     const openEditDialog = async (row: SaleListItem) => {
+        releaseTriggerFocus();
         setErrorMessage(null);
         const sale = await salesApi.get(row.id);
         setEditing(row);
@@ -636,7 +644,7 @@ function SalesPageContent() {
                                     </TableCell>
                                     <TableCell align="right">
                                         <Tooltip title="View">
-                                            <IconButton size="small" onClick={() => setViewTarget(sale.id)}>
+                                            <IconButton size="small" onClick={() => { releaseTriggerFocus(); setViewTarget(sale.id); }}>
                                                 <VisibilityIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
@@ -649,7 +657,7 @@ function SalesPageContent() {
                                             <IconButton
                                                 size="small"
                                                 color="error"
-                                                onClick={() => setDeleteTarget(sale)}
+                                                onClick={() => { releaseTriggerFocus(); setDeleteTarget(sale); }}
                                             >
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
@@ -680,7 +688,7 @@ function SalesPageContent() {
                                         field.onChange(id); reset({ ...watch(), customer_id: id, customer_name: customer?.full_name ?? "" });
                                     }} error={!!errors.customer_id} helperText={errors.customer_id?.message ?? "Select an active customer"}>
                                         <MenuItem value="" disabled>Select customer</MenuItem>
-                                        {(customers ?? []).filter((customer) => customer.status === "ACTIVE").map((customer) => <MenuItem key={customer.id} value={customer.id}>{customer.full_name}</MenuItem>) }
+                                        {(customers ?? []).filter((customer) => customer.status === "ACTIVE").map((customer) => <MenuItem key={customer.id} value={customer.id}>{customer.full_name}</MenuItem>)}
                                     </TextField>
                                 )} />
                                 <input type="hidden" {...register("customer_name", { required: "Customer selection is mandatory" })} />
