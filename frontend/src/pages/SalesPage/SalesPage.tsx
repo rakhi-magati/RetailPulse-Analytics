@@ -352,8 +352,12 @@ function SalesPageContent() {
         const link = document.createElement("a"); link.href = url; link.download = `${sale.invoice_number}.csv`; link.click(); URL.revokeObjectURL(url);
     };
     const exportPdf = (sale: Sale) => {
-        const popup = window.open("", "_blank", "noopener,noreferrer");
-        if (!popup) return;
+        // Do not use `noopener` here: browsers return null for that popup and no invoice can be written.
+        const popup = window.open("", "_blank", "width=900,height=700");
+        if (!popup) {
+            setErrorMessage("The invoice window was blocked. Please allow pop-ups and try again.");
+            return;
+        }
         popup.document.write(`<html><head><title>${sale.invoice_number}</title><style>body{font-family:Arial;padding:32px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}.total{font-weight:bold;text-align:right}</style></head><body><h1>RetailPulse Analytics</h1><h2>Invoice ${sale.invoice_number}</h2><p><b>Customer:</b> ${sale.customer_name}<br/><b>Date:</b> ${new Date(sale.sale_date).toLocaleString()}<br/><b>Payment:</b> ${sale.payment_method}</p><table><thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr></thead><tbody>${sale.items.map((item) => `<tr><td>${item.product_name ?? ""}</td><td>${item.sku ?? ""}</td><td>${item.quantity}</td><td>${currency(item.unit_price)}</td><td>${currency(item.total)}</td></tr>`).join("")}</tbody></table><p class="total">Subtotal: ${currency(sale.subtotal)}<br/>Discount: -${currency(sale.discount_total)}<br/>Tax: +${currency(sale.tax_total)}<br/>Grand Total: ${currency(sale.total_amount)}</p></body></html>`);
         popup.document.close(); popup.focus(); popup.print();
     };
