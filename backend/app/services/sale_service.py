@@ -14,7 +14,7 @@ from app.models.user import User
 from app.models.customer import Customer
 from app.repositories import notification_repository, product_repository, sale_repository
 from app.schemas.sale import SaleCreate, SaleItemCreate, SaleUpdate
-from app.services import inventory_service
+from app.services import inventory_service, forecast_service
 from app.services.audit_service import log_action
 
 MAX_INVOICE_RETRIES = 5
@@ -187,6 +187,7 @@ def create_sale(
         entity_name=sale.invoice_number,
     )
 
+    forecast_service.refresh_existing_for_company(db, company_id, actor.id, ip_address, browser)
     return get_sale(db, sale.id, company_id)
 
 
@@ -342,6 +343,7 @@ def update_sale(
         entity_name=sale.invoice_number,
     )
 
+    forecast_service.refresh_existing_for_company(db, company_id, actor.id, ip_address, browser)
     return get_sale(db, sale.id, company_id)
 
 
@@ -369,6 +371,7 @@ def delete_sale(
         browser=browser,
         entity_name=invoice_number,
     )
+    forecast_service.refresh_existing_for_company(db, company_id, actor.id, ip_address, browser)
 
 
 def dashboard_summary(db: Session, company_id: int) -> dict:

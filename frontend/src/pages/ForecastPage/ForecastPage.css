@@ -1,0 +1,68 @@
+﻿.forecast-page {
+    min-height: 100%;
+}
+
+.forecast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.forecast-actions,
+.forecast-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.forecast-filters {
+    padding: 18px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.forecast-filters .MuiTextField-root {
+    min-width: 170px;
+}
+
+.forecast-kpis {
+    margin-bottom: 24px;
+}
+
+.forecast-kpi,
+.forecast-card,
+.forecast-table-card {
+    padding: 20px;
+    height: 100%;
+}
+
+
+.forecast-card {
+    margin-bottom: 4px;
+}
+
+.forecast-card .MuiTypography-h6,
+.forecast-table-card .MuiTypography-h6 {
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+.forecast-table-card {
+    margin-top: 24px;
+}
+
+@media (max-width:700px) {
+    .forecast-header {
+        flex-direction: column;
+    }
+
+    .forecast-actions .MuiButton-root {
+        flex: 1 1 auto;
+    }
+
+    .forecast-filters .MuiTextField-root {
+        width: 100%;
+    }
+}

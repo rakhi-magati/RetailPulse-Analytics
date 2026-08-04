@@ -16,6 +16,7 @@ import SalesPage from "./pages/SalesPage/SalesPage";
 import AnalyticsDashboardPage from "./pages/AnalyticsDashboardPage/AnalyticsDashboardPage";
 import InventoryPage from "./pages/InventoryPage/InventoryPage";
 import CustomersPage from "./pages/CustomersPage/CustomersPage";
+import ForecastPage from "./pages/ForecastPage/ForecastPage";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/sales" element={<SalesPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/forecasts" element={<ForecastPage />} />
           
         </Route>
       </Route>

@@ -18,6 +18,7 @@ from app.models.sale import Sale, SaleItem
 from app.models.notification import Notification
 from app.models.inventory import Inventory, InventoryMovement
 from app.models.customer import Customer, CustomerPurchaseSummary, CustomerTimeline
+from app.models.demand_forecast import DemandForecast, ForecastHistory
 
 from app.api.auth import router as auth_router
 from app.api.users import router as users_router
@@ -28,11 +29,24 @@ from app.api.notifications import router as notifications_router
 from app.api.inventory import router as inventory_router
 from app.api.analytics import router as analytics_router
 from app.api.customers import router as customers_router
+from app.api.forecasts import router as forecasts_router
 
 # Create newly introduced tables, then bring older development databases forward.
 # SQLAlchemy create_all does not add columns to a table that already exists.
 Base.metadata.create_all(bind=engine)
 
+
+def ensure_customer_profile_schema() -> None:
+    """Add Task 8 customer fields to existing development databases."""
+    inspector = inspect(engine)
+    if "customers" not in inspector.get_table_names():
+        return
+    columns = {column["name"] for column in inspector.get_columns("customers")}
+    additions = {"first_name": "VARCHAR(100)", "last_name": "VARCHAR(100)", "postal_code": "VARCHAR(20)"}
+    with engine.begin() as connection:
+        for name, column_type in additions.items():
+            if name not in columns:
+                connection.execute(text(f"ALTER TABLE customers ADD COLUMN {name} {column_type} NULL"))
 
 def ensure_customer_sales_schema() -> None:
     """Idempotently upgrade legacy sales tables for the Customers module."""
@@ -53,6 +67,7 @@ def ensure_customer_sales_schema() -> None:
 
 
 try:
+    ensure_customer_profile_schema()
     ensure_customer_sales_schema()
 except Exception:
     logging.getLogger("retailpulse.schema").exception(
@@ -68,14 +83,6 @@ app = FastAPI(
 
 # Add logging first so CORS wraps all responses, including API errors.
 app.add_middleware(AccessLogMiddleware)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[settings.FRONTEND_ORIGIN, "http://127.0.0.1:5173"],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1):\d+",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 app.include_router(auth_router)
 app.include_router(users_router)
@@ -86,13 +93,24 @@ app.include_router(notifications_router)
 app.include_router(inventory_router)
 app.include_router(analytics_router)
 app.include_router(customers_router)
+app.include_router(forecasts_router)
 
 
 @app.get("/")
 def root():
-    return {"message": "RetailPulse Analytics Backend Running 🚀"}
+    return {"message": "RetailPulse Analytics Backend Running Ã°Å¸Å¡â‚¬"}
 
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
+# Wrap the completed FastAPI app so CORS headers are included even when an
+# unexpected server exception produces a 500 response.
+app = CORSMiddleware(
+    app=app,
+    allow_origins=[settings.FRONTEND_ORIGIN, "http://127.0.0.1:5173"],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1):\d+",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

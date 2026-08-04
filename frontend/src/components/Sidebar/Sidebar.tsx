@@ -13,6 +13,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/DashboardOutlined";
 import AnalyticsIcon from "@mui/icons-material/BarChartOutlined";
+import ForecastIcon from "@mui/icons-material/AutoGraphOutlined";
 import SalesIcon from "@mui/icons-material/StorefrontOutlined";
 import ProductsIcon from "@mui/icons-material/Inventory2Outlined";
 import CategoriesIcon from "@mui/icons-material/CategoryOutlined";
@@ -33,6 +34,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
   { label: "Analytics", icon: <AnalyticsIcon />, path: "/analytics" },
+  { label: "Demand Forecasting", icon: <ForecastIcon />, path: "/forecasts" },
   { label: "Sales", icon: <SalesIcon />, path: "/sales" },
   { label: "Products", icon: <ProductsIcon />, path: "/products" },
   { label: "Categories", icon: <CategoriesIcon />, path: "/categories" },

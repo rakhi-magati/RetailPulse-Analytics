@@ -4,13 +4,16 @@ export type Customer = {
     id: number;
     customer_id: string;
     full_name: string;
+    first_name?: string;
+    last_name?: string;
     email: string;
     phone: string;
-    customer_type: "RETAIL" | "WHOLESALE" | "CORPORATE";
     status: "ACTIVE" | "INACTIVE";
     city?: string;
     state?: string;
     country?: string;
+    address?: string;
+    postal_code?: string;
     created_at: string;
     total_orders: number;
     total_revenue: number;
@@ -20,17 +23,16 @@ export type Customer = {
 };
 
 export type CustomerInput = {
-    full_name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     phone: string;
-    customer_type: "RETAIL" | "WHOLESALE" | "CORPORATE";
     status?: "ACTIVE" | "INACTIVE";
     city?: string;
     state?: string;
     country?: string;
+    postal_code?: string;
     address?: string;
-    gender?: string;
-    preferred_sales_channel?: string;
 };
 
 export const customersApi = {
