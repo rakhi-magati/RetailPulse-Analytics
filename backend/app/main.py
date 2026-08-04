@@ -58,6 +58,8 @@ def ensure_customer_sales_schema() -> None:
     with engine.begin() as connection:
         if "customer_id" not in columns:
             connection.execute(text("ALTER TABLE sales ADD COLUMN customer_id INTEGER NULL"))
+        if "payment_status" not in columns:
+            connection.execute(text("ALTER TABLE sales ADD COLUMN payment_status VARCHAR(20) NOT NULL DEFAULT 'PAID'"))
 
     # Refresh metadata after the ALTER so repeated application starts are safe.
     indexes = {index["name"] for index in inspect(engine).get_indexes("sales")}

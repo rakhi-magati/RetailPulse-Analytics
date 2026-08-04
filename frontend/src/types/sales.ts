@@ -1,5 +1,6 @@
 export type SalesChannel = "RETAIL_STORE" | "ONLINE_STORE" | "MARKETPLACE";
 export type PaymentMethod = "CASH" | "CARD" | "UPI" | "BANK_TRANSFER";
+export type PaymentStatus = "PAID" | "PENDING" | "PARTIAL" | "FAILED";
 
 export interface SaleItemInput {
   product_id: number;
@@ -28,9 +29,11 @@ export interface Sale {
   company_id: number;
   invoice_number: string;
   customer_name: string;
+  customer_id: number | null;
   sale_date: string;
   sales_channel: SalesChannel;
   payment_method: PaymentMethod;
+  payment_status: PaymentStatus;
   subtotal: number;
   discount_total: number;
   tax_total: number;
@@ -46,9 +49,11 @@ export interface SaleListItem {
   id: number;
   invoice_number: string;
   customer_name: string;
+  customer_id: number | null;
   sale_date: string;
   sales_channel: SalesChannel;
   payment_method: PaymentMethod;
+  payment_status: PaymentStatus;
   total_amount: number;
   item_count: number;
   product_summary: string | null;
@@ -56,9 +61,11 @@ export interface SaleListItem {
 
 export interface SaleCreateRequest {
   customer_name: string;
+  customer_id?: number | null;
   sale_date?: string | null;
   sales_channel: SalesChannel;
   payment_method: PaymentMethod;
+  payment_status?: PaymentStatus;
   items: SaleItemInput[];
 }
 
@@ -71,7 +78,8 @@ export interface SaleFilters {
   category_id?: number;
   sales_channel?: SalesChannel;
   payment_method?: PaymentMethod;
-  sort_by?: "date" | "invoice_number" | "total_amount";
+  payment_status?: PaymentStatus;
+  sort_by?: "date" | "invoice_number" | "total_amount" | "customer_name";
   sort_dir?: "asc" | "desc";
 }
 

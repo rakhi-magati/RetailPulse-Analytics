@@ -65,6 +65,7 @@ def list_filtered(
     category_id: Optional[int] = None,
     sales_channel: Optional[SalesChannel] = None,
     payment_method: Optional[PaymentMethod] = None,
+    payment_status: Optional[str] = None,
     sort_by: str = "date",
     sort_dir: str = "desc",
 ):
@@ -99,12 +100,16 @@ def list_filtered(
     if payment_method is not None:
         query = query.filter(Sale.payment_method == payment_method)
 
+    if payment_status is not None:
+        query = query.filter(Sale.payment_status == payment_status)
+
     query = query.distinct()
 
     sort_column = {
         "date": Sale.sale_date,
         "invoice_number": Sale.invoice_number,
         "total_amount": Sale.total_amount,
+        "customer_name": Sale.customer_name,
     }.get(sort_by, Sale.sale_date)
 
     query = query.order_by(sort_column.asc() if sort_dir == "asc" else sort_column.desc())

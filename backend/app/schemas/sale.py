@@ -14,7 +14,7 @@ from app.core.enums import PaymentMethod, SalesChannel
 class SaleItemCreate(BaseModel):
     product_id: int
     quantity: int = Field(..., gt=0, description="Quantity sold must be greater than zero")
-    unit_price: Decimal = Field(..., ge=0, description="Unit price cannot be negative")
+    unit_price: Decimal = Field(..., gt=0, description="Unit price must be greater than zero")
     discount: Decimal = Field(0, ge=0, description="Discount applied on the line item")
     tax: Decimal = Field(0, ge=0, description="Tax cannot be negative")
 
@@ -52,6 +52,7 @@ class SaleBase(BaseModel):
     sale_date: Optional[datetime] = None
     sales_channel: SalesChannel
     payment_method: PaymentMethod
+    payment_status: str = Field("PAID", pattern="^(PAID|PENDING|PARTIAL|FAILED)$")
 
     @field_validator("customer_name")
     @classmethod
@@ -79,6 +80,7 @@ class SaleUpdate(BaseModel):
     sale_date: Optional[datetime] = None
     sales_channel: Optional[SalesChannel] = None
     payment_method: Optional[PaymentMethod] = None
+    payment_status: Optional[str] = Field(None, pattern="^(PAID|PENDING|PARTIAL|FAILED)$")
     items: Optional[List[SaleItemCreate]] = Field(None, min_length=1)
 
     @field_validator("customer_name")
@@ -108,6 +110,7 @@ class SaleOut(BaseModel):
     sale_date: datetime
     sales_channel: SalesChannel
     payment_method: PaymentMethod
+    payment_status: str = Field("PAID", pattern="^(PAID|PENDING|PARTIAL|FAILED)$")
     subtotal: Decimal
     discount_total: Decimal
     tax_total: Decimal
@@ -129,6 +132,7 @@ class SaleListOut(BaseModel):
     sale_date: datetime
     sales_channel: SalesChannel
     payment_method: PaymentMethod
+    payment_status: str = Field("PAID", pattern="^(PAID|PENDING|PARTIAL|FAILED)$")
     total_amount: Decimal
     item_count: int
     product_summary: Optional[str] = None

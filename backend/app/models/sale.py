@@ -43,6 +43,10 @@ class Sale(Base):
         nullable=False,
     )
 
+    # A sale is paid at creation unless a future payment workflow explicitly
+    # marks it otherwise. A string remains compatible with existing databases.
+    payment_status = Column(String(20), nullable=False, default="PAID", server_default="PAID")
+
     subtotal = Column(Numeric(12, 2), nullable=False, default=0)
     discount_total = Column(Numeric(12, 2), nullable=False, default=0)
     tax_total = Column(Numeric(12, 2), nullable=False, default=0)

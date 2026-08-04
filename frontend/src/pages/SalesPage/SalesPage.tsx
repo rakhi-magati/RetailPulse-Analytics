@@ -36,12 +36,14 @@ import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import VisibilityIcon from "@mui/icons-material/VisibilityOutlined";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { categoriesApi, productsApi } from "../../api/catalog";
+import { customersApi } from "../../api/customers";
 import { salesApi } from "../../api/sales";
 import RoleGuard from "../../components/RoleGuard";
 import type { Product } from "../../types/catalog";
@@ -52,7 +54,7 @@ import type { Product } from "../../types/catalog";
 //     SalesChannel,
 // } from "../../types/sales";
 
-import type { PaymentMethod, SaleCreateRequest, SaleListItem, SalesChannel } from "../../types/sales";
+import type { PaymentMethod, PaymentStatus, Sale, SaleCreateRequest, SaleListItem, SalesChannel } from "../../types/sales";
 
 interface ItemFormValues {
     product_id: number | "";
@@ -63,6 +65,8 @@ interface ItemFormValues {
 
 interface SaleFormValues {
     customer_name: string;
+    customer_id: number | "";
+    payment_status: PaymentStatus;
     sale_date: string;
     sales_channel: SalesChannel;
     payment_method: PaymentMethod;
@@ -73,6 +77,8 @@ const emptyItem: ItemFormValues = { product_id: "", quantity: "1", discount: "0"
 
 const emptyValues: SaleFormValues = {
     customer_name: "",
+    customer_id: "",
+    payment_status: "PAID",
     sale_date: "",
     sales_channel: "RETAIL_STORE",
     payment_method: "CASH",
@@ -83,6 +89,13 @@ const channelOptions: { value: SalesChannel; label: string }[] = [
     { value: "RETAIL_STORE", label: "Retail Store" },
     { value: "ONLINE_STORE", label: "Online Store" },
     { value: "MARKETPLACE", label: "Marketplace" },
+];
+
+const paymentStatusOptions: { value: PaymentStatus; label: string }[] = [
+    { value: "PAID", label: "Paid" },
+    { value: "PENDING", label: "Pending" },
+    { value: "PARTIAL", label: "Partial" },
+    { value: "FAILED", label: "Failed" },
 ];
 
 const paymentOptions: { value: PaymentMethod; label: string }[] = [
@@ -113,7 +126,8 @@ function SalesPageContent() {
     const [categoryFilter, setCategoryFilter] = useState<number | "">("");
     const [channelFilter, setChannelFilter] = useState<SalesChannel | "">("");
     const [paymentFilter, setPaymentFilter] = useState<PaymentMethod | "">("");
-    const [sortBy, setSortBy] = useState<"date" | "invoice_number" | "total_amount">("date");
+    const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | "">("");
+    const [sortBy, setSortBy] = useState<"date" | "invoice_number" | "total_amount" | "customer_name">("date");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -121,6 +135,11 @@ function SalesPageContent() {
     const [viewTarget, setViewTarget] = useState<number | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<SaleListItem | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const { data: customers } = useQuery({
+        queryKey: ["customers"],
+        queryFn: () => customersApi.list(),
+    });
 
     const { data: categories } = useQuery({
         queryKey: ["categories"],
@@ -139,7 +158,7 @@ function SalesPageContent() {
     });
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ["sales", search, dateFrom, dateTo, categoryFilter, channelFilter, paymentFilter, sortBy, sortDir],
+        queryKey: ["sales", search, dateFrom, dateTo, categoryFilter, channelFilter, paymentFilter, paymentStatusFilter, sortBy, sortDir],
         queryFn: () =>
             salesApi.list({
                 search: search || undefined,
@@ -148,6 +167,7 @@ function SalesPageContent() {
                 category_id: categoryFilter || undefined,
                 sales_channel: channelFilter || undefined,
                 payment_method: paymentFilter || undefined,
+                payment_status: paymentStatusFilter || undefined,
                 sort_by: sortBy,
                 sort_dir: sortDir,
             }),
@@ -187,6 +207,8 @@ function SalesPageContent() {
 
     const toPayload = (values: SaleFormValues): SaleCreateRequest => ({
         customer_name: values.customer_name.trim(),
+        customer_id: values.customer_id === "" ? null : Number(values.customer_id),
+        payment_status: values.payment_status,
         sale_date: values.sale_date ? new Date(values.sale_date).toISOString() : undefined,
         sales_channel: values.sales_channel,
         payment_method: values.payment_method,
@@ -248,6 +270,8 @@ function SalesPageContent() {
         setEditing(row);
         reset({
             customer_name: sale.customer_name,
+            customer_id: sale.customer_id ?? "",
+            payment_status: sale.payment_status,
             sale_date: toDatetimeLocal(sale.sale_date),
             sales_channel: sale.sales_channel,
             payment_method: sale.payment_method,
@@ -279,6 +303,10 @@ function SalesPageContent() {
                 return;
             }
             const product = productsById.get(Number(item.product_id));
+            if (product && Number(item.quantity) > product.stock_quantity) {
+                setErrorMessage(`Requested quantity exceeds available stock for ${product.name}.`);
+                return;
+            }
             const lineValue = (product ? Number(product.unit_price) : 0) * Number(item.quantity);
             if (Number(item.discount || 0) > lineValue) {
                 setErrorMessage("Discount cannot exceed total product value");
@@ -306,10 +334,29 @@ function SalesPageContent() {
         return unitPrice * qty - discount + tax;
     };
 
-    const formTotal = useMemo(
-        () => (watchedItems ?? []).reduce((sum, item) => sum + computeLineTotal(item), 0),
-        [watchedItems, productsById]
-    );
+    const billing = useMemo(() => {
+        return (watchedItems ?? []).reduce((summary, item) => {
+            const product = productsById.get(Number(item.product_id));
+            const lineSubtotal = (Number(product?.unit_price) || 0) * (Number(item.quantity) || 0);
+            const discount = Number(item.discount) || 0;
+            const tax = Number(item.tax) || 0;
+            return { subtotal: summary.subtotal + lineSubtotal, discount: summary.discount + discount, tax: summary.tax + tax };
+        }, { subtotal: 0, discount: 0, tax: 0 });
+    }, [watchedItems, productsById]);
+    const formTotal = billing.subtotal - billing.discount + billing.tax;
+
+    const exportCsv = (sale: Sale) => {
+        const rows = [["Invoice Number", sale.invoice_number], ["Customer", sale.customer_name], ["Sale Date", new Date(sale.sale_date).toLocaleString()], [], ["Product", "SKU", "Quantity", "Unit Price", "Line Total"], ...sale.items.map((item) => [item.product_name ?? "", item.sku ?? "", String(item.quantity), String(item.unit_price), String(item.total)]), [], ["Subtotal", "", "", "", String(sale.subtotal)], ["Discount", "", "", "", String(sale.discount_total)], ["Tax", "", "", "", String(sale.tax_total)], ["Grand Total", "", "", "", String(sale.total_amount)]];
+        const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        const link = document.createElement("a"); link.href = url; link.download = `${sale.invoice_number}.csv`; link.click(); URL.revokeObjectURL(url);
+    };
+    const exportPdf = (sale: Sale) => {
+        const popup = window.open("", "_blank", "noopener,noreferrer");
+        if (!popup) return;
+        popup.document.write(`<html><head><title>${sale.invoice_number}</title><style>body{font-family:Arial;padding:32px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}.total{font-weight:bold;text-align:right}</style></head><body><h1>RetailPulse Analytics</h1><h2>Invoice ${sale.invoice_number}</h2><p><b>Customer:</b> ${sale.customer_name}<br/><b>Date:</b> ${new Date(sale.sale_date).toLocaleString()}<br/><b>Payment:</b> ${sale.payment_method}</p><table><thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr></thead><tbody>${sale.items.map((item) => `<tr><td>${item.product_name ?? ""}</td><td>${item.sku ?? ""}</td><td>${item.quantity}</td><td>${currency(item.unit_price)}</td><td>${currency(item.total)}</td></tr>`).join("")}</tbody></table><p class="total">Subtotal: ${currency(sale.subtotal)}<br/>Discount: -${currency(sale.discount_total)}<br/>Tax: +${currency(sale.tax_total)}<br/>Grand Total: ${currency(sale.total_amount)}</p></body></html>`);
+        popup.document.close(); popup.focus(); popup.print();
+    };
 
     const summaryCards = [
         {
@@ -486,6 +533,12 @@ function SalesPageContent() {
                             ))}
                         </Select>
                     </Grid>
+                    <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+                        <Select fullWidth size="small" displayEmpty value={paymentStatusFilter} onChange={(e) => setPaymentStatusFilter(e.target.value as PaymentStatus | "")}>
+                            <MenuItem value="">All Statuses</MenuItem>
+                            {paymentStatusOptions.map((status) => <MenuItem key={status.value} value={status.value}>{status.label}</MenuItem>)}
+                        </Select>
+                    </Grid>
                 </Grid>
                 <Grid container spacing={2} sx={{ mt: 0.5 }}>
                     <Grid size={{ xs: 8, sm: 4, md: 3 }}>
@@ -498,6 +551,7 @@ function SalesPageContent() {
                             <MenuItem value="date">Sort by Date</MenuItem>
                             <MenuItem value="invoice_number">Sort by Invoice Number</MenuItem>
                             <MenuItem value="total_amount">Sort by Total Amount</MenuItem>
+                            <MenuItem value="customer_name">Sort by Customer Name</MenuItem>
                         </Select>
                     </Grid>
                     <Grid size={{ xs: 4, sm: 2, md: 2 }}>
@@ -525,6 +579,7 @@ function SalesPageContent() {
                                 <TableCell>Products</TableCell>
                                 <TableCell>Channel</TableCell>
                                 <TableCell>Payment</TableCell>
+                                <TableCell>Status</TableCell>
                                 <TableCell align="right">Total</TableCell>
                                 <TableCell align="right">Actions</TableCell>
                             </TableRow>
@@ -533,7 +588,7 @@ function SalesPageContent() {
                             {isLoading &&
                                 [1, 2, 3].map((i) => (
                                     <TableRow key={i}>
-                                        <TableCell colSpan={8}>
+                                        <TableCell colSpan={9}>
                                             <Skeleton height={32} />
                                         </TableCell>
                                     </TableRow>
@@ -541,7 +596,7 @@ function SalesPageContent() {
 
                             {isError && (
                                 <TableRow>
-                                    <TableCell colSpan={8}>
+                                    <TableCell colSpan={9}>
                                         <Alert severity="error">Couldn't load sales.</Alert>
                                     </TableCell>
                                 </TableRow>
@@ -549,7 +604,7 @@ function SalesPageContent() {
 
                             {!isLoading && !isError && rows.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={8}>
+                                    <TableCell colSpan={9}>
                                         <Typography color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
                                             No sales found. Try adjusting your filters or record a new sale.
                                         </Typography>
@@ -571,6 +626,7 @@ function SalesPageContent() {
                                     <TableCell>
                                         {paymentOptions.find((p) => p.value === sale.payment_method)?.label}
                                     </TableCell>
+                                    <TableCell><Chip size="small" label={sale.payment_status} color={sale.payment_status === "PAID" ? "success" : sale.payment_status === "FAILED" ? "error" : "warning"} /></TableCell>
                                     <TableCell align="right" sx={{ fontWeight: 600 }}>
                                         {currency(sale.total_amount)}
                                     </TableCell>
@@ -614,14 +670,16 @@ function SalesPageContent() {
                         )}
                         <Grid container spacing={2}>
                             <Grid size={{ xs: 12, sm: 6 }}>
-                                <TextField
-                                    label="Customer Name"
-                                    fullWidth
-                                    autoFocus
-                                    {...register("customer_name", { required: "Customer name is mandatory" })}
-                                    error={!!errors.customer_name}
-                                    helperText={errors.customer_name?.message}
-                                />
+                                <Controller control={control} name="customer_id" rules={{ required: "Customer selection is mandatory" }} render={({ field }) => (
+                                    <TextField select label="Customer" fullWidth autoFocus value={field.value} onChange={(event) => {
+                                        const id = Number(event.target.value); const customer = (customers ?? []).find((entry) => entry.id === id);
+                                        field.onChange(id); reset({ ...watch(), customer_id: id, customer_name: customer?.full_name ?? "" });
+                                    }} error={!!errors.customer_id} helperText={errors.customer_id?.message ?? "Select an active customer"}>
+                                        <MenuItem value="" disabled>Select customer</MenuItem>
+                                        {(customers ?? []).filter((customer) => customer.status === "ACTIVE").map((customer) => <MenuItem key={customer.id} value={customer.id}>{customer.full_name}</MenuItem>) }
+                                    </TextField>
+                                )} />
+                                <input type="hidden" {...register("customer_name", { required: "Customer selection is mandatory" })} />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
@@ -662,6 +720,11 @@ function SalesPageContent() {
                                         </Select>
                                     )}
                                 />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6 }}>
+                                <Controller control={control} name="payment_status" render={({ field }) => (
+                                    <TextField select label="Payment Status" fullWidth {...field}>{paymentStatusOptions.map((status) => <MenuItem key={status.value} value={status.value}>{status.label}</MenuItem>)}</TextField>
+                                )} />
                             </Grid>
 
                             <Grid size={12}>
@@ -778,9 +841,14 @@ function SalesPageContent() {
 
                             <Grid size={12}>
                                 <Divider sx={{ my: 1 }} />
-                                <Typography variant="h6" sx={{ textAlign: "right" }}>
-                                    Total: {currency(formTotal)}
-                                </Typography>
+                                <Paper variant="outlined" sx={{ ml: "auto", p: 2, maxWidth: 340 }}>
+                                    <Typography variant="subtitle2" sx={{ mb: 1 }}>Billing Summary</Typography>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between" }}><Typography color="text.secondary">Subtotal</Typography><Typography>{currency(billing.subtotal)}</Typography></Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between" }}><Typography color="text.secondary">Discount</Typography><Typography>-{currency(billing.discount)}</Typography></Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between" }}><Typography color="text.secondary">Tax</Typography><Typography>+{currency(billing.tax)}</Typography></Box>
+                                    <Divider sx={{ my: 1 }} />
+                                    <Box sx={{ display: "flex", justifyContent: "space-between" }}><Typography sx={{ fontWeight: 700 }}>Grand Total</Typography><Typography sx={{ fontWeight: 700 }}>{currency(formTotal)}</Typography></Box>
+                                </Paper>
                             </Grid>
                         </Grid>
                     </DialogContent>
@@ -848,7 +916,7 @@ function SalesPageContent() {
                             <Table size="small">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>Product</TableCell>
+                                        <TableCell>Product / SKU</TableCell>
                                         <TableCell align="right">Qty</TableCell>
                                         <TableCell align="right">Unit Price</TableCell>
                                         <TableCell align="right">Discount</TableCell>
@@ -862,6 +930,7 @@ function SalesPageContent() {
                                             <TableCell>
                                                 {item.product_name}
                                                 {item.category_name ? ` (${item.category_name})` : ""}
+                                                <Typography variant="caption" display="block" color="text.secondary">SKU: {item.sku ?? "—"}</Typography>
                                             </TableCell>
                                             <TableCell align="right">{item.quantity}</TableCell>
                                             <TableCell align="right">{currency(item.unit_price)}</TableCell>
@@ -911,6 +980,8 @@ function SalesPageContent() {
                     )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button startIcon={<DownloadOutlinedIcon />} disabled={!viewedSale} onClick={() => viewedSale && exportPdf(viewedSale)}>Export PDF</Button>
+                    <Button startIcon={<DownloadOutlinedIcon />} disabled={!viewedSale} onClick={() => viewedSale && exportCsv(viewedSale)}>Export CSV</Button>
                     <Button onClick={() => setViewTarget(null)}>Close</Button>
                 </DialogActions>
             </Dialog>

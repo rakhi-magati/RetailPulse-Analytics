@@ -91,7 +91,11 @@ def _restore_stock(
 
 
 def _price_item(item: SaleItemCreate, product: Product) -> dict:
-    line_value = item.unit_price * item.quantity
+    # Product prices are authoritative; the request price is display-only.
+    unit_price = Decimal(str(product.unit_price))
+    if unit_price <= 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Product '{product.name}' has no valid sale price")
+    line_value = unit_price * item.quantity
     if item.discount > line_value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -102,7 +106,7 @@ def _price_item(item: SaleItemCreate, product: Product) -> dict:
         "product_id": item.product_id,
         "category_id": product.category_id,
         "quantity": item.quantity,
-        "unit_price": item.unit_price,
+        "unit_price": unit_price,
         "discount": item.discount,
         "tax": item.tax,
         "total": total,
@@ -120,7 +124,15 @@ def create_sale(
     if not data.items:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Product selection is mandatory")
 
-    # Validate + deduct stock up front so we never persist a sale we can't fulfil.
+    customer = None
+    if data.customer_id is not None:
+        customer = db.query(Customer).filter(Customer.id == data.customer_id, Customer.company_id == company_id).first()
+        if not customer:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Customer does not exist for this company")
+        if customer.status != "ACTIVE":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot record a sale for an inactive customer")
+
+    # Validate customer before changing inventory, then validate and deduct stock.
     _deduct_stock(db, data.items, company_id, actor, ip_address, browser)
 
     subtotal = Decimal("0")
@@ -131,19 +143,12 @@ def create_sale(
         product = product_repository.get_by_id_in_company(db, item.product_id, company_id)
         priced = _price_item(item, product)
         priced_items.append(priced)
-        subtotal += item.unit_price * item.quantity
+        subtotal += priced["unit_price"] * item.quantity
         discount_total += item.discount
         tax_total += item.tax
 
     total_amount = (subtotal - discount_total) + tax_total
 
-    customer = None
-    if data.customer_id is not None:
-        customer = db.query(Customer).filter(Customer.id == data.customer_id, Customer.company_id == company_id).first()
-        if not customer:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Customer does not exist for this company")
-        if customer.status != "ACTIVE":
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot record a sale for an inactive customer")
     invoice_number = None
     sale = None
     for attempt in range(MAX_INVOICE_RETRIES):
@@ -156,6 +161,7 @@ def create_sale(
             sale_date=data.sale_date or datetime.now(timezone.utc),
             sales_channel=data.sales_channel,
             payment_method=data.payment_method,
+            payment_status=data.payment_status,
             subtotal=subtotal,
             discount_total=discount_total,
             tax_total=tax_total,
@@ -202,6 +208,7 @@ def serialize_sale(sale: Sale) -> dict:
         "sale_date": sale.sale_date,
         "sales_channel": sale.sales_channel,
         "payment_method": sale.payment_method,
+        "payment_status": sale.payment_status,
         "subtotal": sale.subtotal,
         "discount_total": sale.discount_total,
         "tax_total": sale.tax_total,
@@ -265,6 +272,7 @@ def list_sales(
     category_id: Optional[int] = None,
     sales_channel: Optional[SalesChannel] = None,
     payment_method: Optional[PaymentMethod] = None,
+    payment_status: Optional[str] = None,
     sort_by: str = "date",
     sort_dir: str = "desc",
 ) -> List[Sale]:
@@ -277,6 +285,7 @@ def list_sales(
         category_id=category_id,
         sales_channel=sales_channel,
         payment_method=payment_method,
+        payment_status=payment_status,
         sort_by=sort_by,
         sort_dir=sort_dir,
     )
@@ -305,6 +314,8 @@ def update_sale(
         sale.sales_channel = data.sales_channel
     if data.payment_method is not None:
         sale.payment_method = data.payment_method
+    if data.payment_status is not None:
+        sale.payment_status = data.payment_status
 
     if data.items is not None:
         # Reverse the previous stock deduction, then re-validate and
@@ -321,7 +332,7 @@ def update_sale(
             product = product_repository.get_by_id_in_company(db, item.product_id, company_id)
             priced = _price_item(item, product)
             priced_items.append(priced)
-            subtotal += item.unit_price * item.quantity
+            subtotal += priced["unit_price"] * item.quantity
             discount_total += item.discount
             tax_total += item.tax
 

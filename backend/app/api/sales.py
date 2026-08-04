@@ -32,7 +32,8 @@ def list_sales(
     category_id: Optional[int] = Query(None, description="Filter by product category"),
     sales_channel: Optional[SalesChannel] = Query(None, description="Filter by sales channel"),
     payment_method: Optional[PaymentMethod] = Query(None, description="Filter by payment method"),
-    sort_by: str = Query("date", description="One of: date, invoice_number, total_amount"),
+    payment_status: Optional[str] = Query(None, pattern="^(PAID|PENDING|PARTIAL|FAILED)$"),
+    sort_by: str = Query("date", description="One of: date, invoice_number, total_amount, customer_name"),
     sort_dir: str = Query("desc", description="asc or desc"),
     db: Session = Depends(get_db),
     company_id: int = Depends(get_current_company_id),
@@ -47,6 +48,7 @@ def list_sales(
         category_id=category_id,
         sales_channel=sales_channel,
         payment_method=payment_method,
+        payment_status=payment_status,
         sort_by=sort_by,
         sort_dir=sort_dir,
     )
