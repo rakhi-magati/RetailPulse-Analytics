@@ -250,6 +250,7 @@ def serialize_sale_list_item(sale: Sale) -> dict:
         "sale_date": sale.sale_date,
         "sales_channel": sale.sales_channel,
         "payment_method": sale.payment_method,
+        "payment_status": sale.payment_status,
         "total_amount": sale.total_amount,
         "item_count": len(sale.items),
         "product_summary": summary or None,
