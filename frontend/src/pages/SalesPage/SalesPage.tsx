@@ -67,6 +67,7 @@ interface SaleFormValues {
     customer_name: string;
     customer_id: number | "";
     payment_status: PaymentStatus;
+    notes: string;
     sale_date: string;
     sales_channel: SalesChannel;
     payment_method: PaymentMethod;
@@ -79,6 +80,7 @@ const emptyValues: SaleFormValues = {
     customer_name: "",
     customer_id: "",
     payment_status: "PAID",
+    notes: "",
     sale_date: "",
     sales_channel: "RETAIL_STORE",
     payment_method: "CASH",
@@ -207,8 +209,9 @@ function SalesPageContent() {
 
     const toPayload = (values: SaleFormValues): SaleCreateRequest => ({
         customer_name: values.customer_name.trim(),
-        customer_id: values.customer_id === "" ? null : Number(values.customer_id),
+        customer_id: Number(values.customer_id),
         payment_status: values.payment_status,
+        notes: values.notes.trim() || null,
         sale_date: values.sale_date ? new Date(values.sale_date).toISOString() : undefined,
         sales_channel: values.sales_channel,
         payment_method: values.payment_method,
@@ -280,6 +283,7 @@ function SalesPageContent() {
             customer_name: sale.customer_name,
             customer_id: sale.customer_id ?? "",
             payment_status: sale.payment_status,
+            notes: sale.notes ?? "",
             sale_date: toDatetimeLocal(sale.sale_date),
             sales_channel: sale.sales_channel,
             payment_method: sale.payment_method,
@@ -300,6 +304,10 @@ function SalesPageContent() {
 
     const onSubmit = (values: SaleFormValues) => {
         setErrorMessage(null);
+        if (values.customer_id === "") {
+            setErrorMessage("Customer selection is mandatory");
+            return;
+        }
 
         for (const item of values.items) {
             if (!item.product_id) {
@@ -360,13 +368,13 @@ function SalesPageContent() {
         const link = document.createElement("a"); link.href = url; link.download = `${sale.invoice_number}.csv`; link.click(); URL.revokeObjectURL(url);
     };
     const exportPdf = (sale: Sale) => {
-        // Do not use `noopener` here: browsers return null for that popup and no invoice can be written.
+        // Opening with a detached window prevents browsers from writing the invoice.
         const popup = window.open("", "_blank", "width=900,height=700");
         if (!popup) {
             setErrorMessage("The invoice window was blocked. Please allow pop-ups and try again.");
             return;
         }
-        popup.document.write(`<html><head><title>${sale.invoice_number}</title><style>body{font-family:Arial;padding:32px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}.total{font-weight:bold;text-align:right}</style></head><body><h1>RetailPulse Analytics</h1><h2>Invoice ${sale.invoice_number}</h2><p><b>Customer:</b> ${sale.customer_name}<br/><b>Date:</b> ${new Date(sale.sale_date).toLocaleString()}<br/><b>Payment:</b> ${sale.payment_method}</p><table><thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr></thead><tbody>${sale.items.map((item) => `<tr><td>${item.product_name ?? ""}</td><td>${item.sku ?? ""}</td><td>${item.quantity}</td><td>${currency(item.unit_price)}</td><td>${currency(item.total)}</td></tr>`).join("")}</tbody></table><p class="total">Subtotal: ${currency(sale.subtotal)}<br/>Discount: -${currency(sale.discount_total)}<br/>Tax: +${currency(sale.tax_total)}<br/>Grand Total: ${currency(sale.total_amount)}</p></body></html>`);
+        popup.document.write(`<html><head><title>${sale.invoice_number}</title><style>body{font-family:Arial;padding:32px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}.total{font-weight:bold;text-align:right}</style></head><body><h1>RetailPulse Analytics</h1><h2>Invoice ${sale.invoice_number}</h2><p><b>Customer:</b> ${sale.customer_name}<br/><b>Date:</b> ${new Date(sale.sale_date).toLocaleString()}<br/><b>Payment:</b> ${sale.payment_method}${sale.notes ? `<br/><b>Notes:</b> ${sale.notes}` : ""}</p><table><thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr></thead><tbody>${sale.items.map((item) => `<tr><td>${item.product_name ?? ""}</td><td>${item.sku ?? ""}</td><td>${item.quantity}</td><td>${currency(item.unit_price)}</td><td>${currency(item.total)}</td></tr>`).join("")}</tbody></table><p class="total">Subtotal: ${currency(sale.subtotal)}<br/>Discount: -${currency(sale.discount_total)}<br/>Tax: +${currency(sale.tax_total)}<br/>Grand Total: ${currency(sale.total_amount)}</p></body></html>`);
         popup.document.close(); popup.focus(); popup.print();
     };
 
@@ -738,6 +746,9 @@ function SalesPageContent() {
                                     <TextField select label="Payment Status" fullWidth {...field}>{paymentStatusOptions.map((status) => <MenuItem key={status.value} value={status.value}>{status.label}</MenuItem>)}</TextField>
                                 )} />
                             </Grid>
+                            <Grid size={12}>
+                                <TextField label="Notes" fullWidth multiline minRows={2} placeholder="Optional notes for this sale" {...register("notes")} inputProps={{ maxLength: 1000 }} />
+                            </Grid>
 
                             <Grid size={12}>
                                 <Divider sx={{ my: 1 }} />
@@ -921,6 +932,7 @@ function SalesPageContent() {
                                         {paymentOptions.find((p) => p.value === viewedSale.payment_method)?.label}
                                     </Typography>
                                 </Grid>
+                                {viewedSale.notes && <Grid size={12}><Typography variant="caption" color="text.secondary">Notes</Typography><Typography>{viewedSale.notes}</Typography></Grid>}
                             </Grid>
 
                             <Divider sx={{ mb: 2 }} />

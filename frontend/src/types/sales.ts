@@ -34,6 +34,7 @@ export interface Sale {
   sales_channel: SalesChannel;
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
+  notes: string | null;
   subtotal: number;
   discount_total: number;
   tax_total: number;
@@ -61,11 +62,12 @@ export interface SaleListItem {
 
 export interface SaleCreateRequest {
   customer_name: string;
-  customer_id?: number | null;
+  customer_id: number;
   sale_date?: string | null;
   sales_channel: SalesChannel;
   payment_method: PaymentMethod;
   payment_status?: PaymentStatus;
+  notes?: string | null;
   items: SaleItemInput[];
 }
 

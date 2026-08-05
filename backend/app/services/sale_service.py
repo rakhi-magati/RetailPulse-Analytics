@@ -162,6 +162,7 @@ def create_sale(
             sales_channel=data.sales_channel,
             payment_method=data.payment_method,
             payment_status=data.payment_status,
+            notes=data.notes,
             subtotal=subtotal,
             discount_total=discount_total,
             tax_total=tax_total,
@@ -209,6 +210,7 @@ def serialize_sale(sale: Sale) -> dict:
         "sales_channel": sale.sales_channel,
         "payment_method": sale.payment_method,
         "payment_status": sale.payment_status,
+        "notes": sale.notes,
         "subtotal": sale.subtotal,
         "discount_total": sale.discount_total,
         "tax_total": sale.tax_total,
@@ -317,6 +319,8 @@ def update_sale(
         sale.payment_method = data.payment_method
     if data.payment_status is not None:
         sale.payment_status = data.payment_status
+    if data.notes is not None:
+        sale.notes = data.notes
 
     if data.items is not None:
         # Reverse the previous stock deduction, then re-validate and

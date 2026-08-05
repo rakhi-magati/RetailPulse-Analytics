@@ -48,11 +48,12 @@ class SaleItemOut(BaseModel):
 
 class SaleBase(BaseModel):
     customer_name: str = Field(..., min_length=1, max_length=255)
-    customer_id: Optional[int] = None
+    customer_id: int = Field(..., gt=0)
     sale_date: Optional[datetime] = None
     sales_channel: SalesChannel
     payment_method: PaymentMethod
     payment_status: str = Field("PAID", pattern="^(PAID|PENDING|PARTIAL|FAILED)$")
+    notes: Optional[str] = Field(None, max_length=1000)
 
     @field_validator("customer_name")
     @classmethod
@@ -81,6 +82,7 @@ class SaleUpdate(BaseModel):
     sales_channel: Optional[SalesChannel] = None
     payment_method: Optional[PaymentMethod] = None
     payment_status: Optional[str] = Field(None, pattern="^(PAID|PENDING|PARTIAL|FAILED)$")
+    notes: Optional[str] = Field(None, max_length=1000)
     items: Optional[List[SaleItemCreate]] = Field(None, min_length=1)
 
     @field_validator("customer_name")
@@ -111,6 +113,7 @@ class SaleOut(BaseModel):
     sales_channel: SalesChannel
     payment_method: PaymentMethod
     payment_status: str = Field("PAID", pattern="^(PAID|PENDING|PARTIAL|FAILED)$")
+    notes: Optional[str] = None
     subtotal: Decimal
     discount_total: Decimal
     tax_total: Decimal
