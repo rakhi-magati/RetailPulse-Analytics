@@ -224,7 +224,7 @@ function SalesPageContent() {
                 discount: Number(item.discount || 0),
                 tax: Number(item.tax || 0),
             };
-        }),
+        }), 
     });
 
     const createMutation = useMutation({
@@ -360,22 +360,214 @@ function SalesPageContent() {
         }, { subtotal: 0, discount: 0, tax: 0 });
     }, [watchedItems, productsById]);
     const formTotal = billing.subtotal - billing.discount + billing.tax;
-
     const exportCsv = (sale: Sale) => {
-        const rows = [["Invoice Number", sale.invoice_number], ["Customer", sale.customer_name], ["Sale Date", new Date(sale.sale_date).toLocaleString()], [], ["Product", "SKU", "Quantity", "Unit Price", "Line Total"], ...sale.items.map((item) => [item.product_name ?? "", item.sku ?? "", String(item.quantity), String(item.unit_price), String(item.total)]), [], ["Subtotal", "", "", "", String(sale.subtotal)], ["Discount", "", "", "", String(sale.discount_total)], ["Tax", "", "", "", String(sale.tax_total)], ["Grand Total", "", "", "", String(sale.total_amount)]];
-        const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
-        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-        const link = document.createElement("a"); link.href = url; link.download = `${sale.invoice_number}.csv`; link.click(); URL.revokeObjectURL(url);
+        const rows = [
+            ["Invoice Number", sale.invoice_number],
+            ["Customer", sale.customer_name],
+            ["Sale Date", new Date(sale.sale_date).toLocaleString()],
+            [],
+            ["Product", "SKU", "Quantity", "Unit Price", "Line Total"],
+            ...sale.items.map((item) => [
+                item.product_name ?? "",
+                item.sku ?? "",
+                String(item.quantity),
+                String(item.unit_price),
+                String(item.total),
+            ]),
+            [],
+            ["Subtotal", "", "", "", String(sale.subtotal)],
+            ["Discount", "", "", "", String(sale.discount_total)],
+            ["Tax", "", "", "", String(sale.tax_total)],
+            ["Grand Total", "", "", "", String(sale.total_amount)],
+        ];
+
+        const csv = rows
+            .map((row) =>
+                row
+                    .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+                    .join(",")
+            )
+            .join("\n");
+
+        const blob = new Blob([csv], {
+            type: "text/csv;charset=utf-8;",
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = `${sale.invoice_number}.csv`;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
     };
+
     const exportPdf = (sale: Sale) => {
-        // Opening with a detached window prevents browsers from writing the invoice.
-        const popup = window.open("", "_blank", "width=900,height=700");
+        const popup = window.open(
+            "",
+            "_blank",
+            "width=900,height=700"
+        );
+
         if (!popup) {
-            setErrorMessage("The invoice window was blocked. Please allow pop-ups and try again.");
+            setErrorMessage(
+                "The invoice window was blocked. Please allow pop-ups and try again."
+            );
             return;
         }
-        popup.document.write(`<html><head><title>${sale.invoice_number}</title><style>body{font-family:Arial;padding:32px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}.total{font-weight:bold;text-align:right}</style></head><body><h1>RetailPulse Analytics</h1><h2>Invoice ${sale.invoice_number}</h2><p><b>Customer:</b> ${sale.customer_name}<br/><b>Date:</b> ${new Date(sale.sale_date).toLocaleString()}<br/><b>Payment:</b> ${sale.payment_method}${sale.notes ? `<br/><b>Notes:</b> ${sale.notes}` : ""}</p><table><thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr></thead><tbody>${sale.items.map((item) => `<tr><td>${item.product_name ?? ""}</td><td>${item.sku ?? ""}</td><td>${item.quantity}</td><td>${currency(item.unit_price)}</td><td>${currency(item.total)}</td></tr>`).join("")}</tbody></table><p class="total">Subtotal: ${currency(sale.subtotal)}<br/>Discount: -${currency(sale.discount_total)}<br/>Tax: +${currency(sale.tax_total)}<br/>Grand Total: ${currency(sale.total_amount)}</p></body></html>`);
-        popup.document.close(); popup.focus(); popup.print();
+
+        const itemsHtml = sale.items
+            .map(
+                (item) => `
+                <tr>
+                    <td>${item.product_name ?? ""}</td>
+                    <td>${item.sku ?? ""}</td>
+                    <td>${item.quantity}</td>
+                    <td>${currency(item.unit_price)}</td>
+                    <td>${currency(item.total)}</td>
+                </tr>
+            `
+            )
+            .join("");
+
+        popup.document.write(`
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="UTF-8" />
+                <title>${sale.invoice_number}</title>
+
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        padding: 32px;
+                        color: #222;
+                    }
+
+                    h1 {
+                        margin-bottom: 4px;
+                    }
+
+                    h2 {
+                        margin-top: 0;
+                    }
+
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 24px;
+                    }
+
+                    th,
+                    td {
+                        padding: 10px;
+                        border-bottom: 1px solid #ddd;
+                        text-align: left;
+                    }
+
+                    th {
+                        background: #f5f5f5;
+                    }
+
+                    .summary {
+                        margin-top: 24px;
+                        margin-left: auto;
+                        width: 300px;
+                    }
+
+                    .summary-row {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 6px 0;
+                    }
+
+                    .grand-total {
+                        font-weight: bold;
+                        font-size: 18px;
+                        border-top: 2px solid #222;
+                        margin-top: 8px;
+                        padding-top: 10px;
+                    }
+
+                    @media print {
+                        body {
+                            padding: 20px;
+                        }
+
+                        @page {
+                            margin: 15mm;
+                        }
+                    }
+                </style>
+            </head>
+
+            <body>
+                <h1>RetailPulse Analytics</h1>
+                <h2>Invoice ${sale.invoice_number}</h2>
+
+                <p>
+                    <strong>Customer:</strong> ${sale.customer_name}<br />
+                    <strong>Date:</strong> ${new Date(
+            sale.sale_date
+        ).toLocaleString()}<br />
+                    <strong>Payment:</strong> ${sale.payment_method}
+                    ${sale.notes
+                ? `<br /><strong>Notes:</strong> ${sale.notes}`
+                : ""
+            }
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>SKU</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Line Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+
+                <div class="summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span>${currency(sale.subtotal)}</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Discount:</span>
+                        <span>-${currency(sale.discount_total)}</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Tax:</span>
+                        <span>+${currency(sale.tax_total)}</span>
+                    </div>
+
+                    <div class="summary-row grand-total">
+                        <span>Grand Total:</span>
+                        <span>${currency(sale.total_amount)}</span>
+                    </div>
+                </div>
+            </body>
+        </html>
+    `);
+
+        popup.document.close();
+        popup.focus();
+
+        setTimeout(() => {
+            popup.print();
+        }, 250);
     };
 
     const summaryCards = [

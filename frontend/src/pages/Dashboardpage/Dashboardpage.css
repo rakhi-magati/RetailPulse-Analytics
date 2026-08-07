@@ -339,3 +339,41 @@ height:30px !important;
 }
 
 }
+/* Theme-mode overrides for the older dashboard styles. */
+html[data-theme="dark"] .dashboard {
+  background: transparent;
+}
+
+html[data-theme="dark"] .dashboard-title,
+html[data-theme="dark"] .section-title,
+html[data-theme="dark"] .stat-value {
+  color: #f9fafb !important;
+}
+
+html[data-theme="dark"] .dashboard-subtitle,
+html[data-theme="dark"] .stat-label,
+html[data-theme="dark"] .stat-caption,
+html[data-theme="dark"] .category-name,
+html[data-theme="dark"] .dashboard-table td {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .dashboard-card,
+html[data-theme="dark"] .dashboard-paper {
+  border-color: #374151 !important;
+  background-color: #1f2937;
+}
+
+html[data-theme="dark"] .dashboard-table .MuiTableHead-root,
+html[data-theme="dark"] .dashboard-table .MuiTableRow-root:hover,
+html[data-theme="dark"] .team-member:hover {
+  background: #273449;
+}
+
+html[data-theme="dark"] .dashboard-table th {
+  color: #f3f4f6 !important;
+}
+
+html[data-theme="dark"] .chart-select .MuiOutlinedInput-notchedOutline {
+  border-color: #4b5563;
+}

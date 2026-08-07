@@ -2,10 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { CssBaseline, ThemeProvider } from "@mui/material";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
-import { theme } from "./theme/theme";
+import { ThemeModeProvider } from "./context/ThemeModeContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,8 +17,7 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeModeProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
@@ -27,6 +25,6 @@ createRoot(document.getElementById("root")!).render(
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
-    </ThemeProvider>
-  </StrictMode>
+    </ThemeModeProvider>
+  </StrictMode>,
 );

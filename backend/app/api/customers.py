@@ -212,8 +212,8 @@ def create_customer(
         db=db,
         data=data,
         company_id=company_id,
-        user=user,
-        ip_address=get_client_ip(request),
+        actor=user,
+        ip=get_client_ip(request),
         browser=get_client_browser(request),
     )
 
@@ -643,11 +643,11 @@ def update_customer(
 ):
     customer = customer_service.update(
         db=db,
-        customer_id=customer_id,
+        id=customer_id,
         data=data,
-        company_id=company_id,
-        user=user,
-        ip_address=get_client_ip(request),
+        company=company_id,
+        actor=user,
+        ip=get_client_ip(request),
         browser=get_client_browser(request),
     )
 
@@ -676,10 +676,10 @@ def delete_customer(
 ):
     customer_service.delete(
         db=db,
-        customer_id=customer_id,
-        company_id=company_id,
-        user=user,
-        ip_address=get_client_ip(request),
+        id=customer_id,
+        company=company_id,
+        actor=user,
+        ip=get_client_ip(request),
         browser=get_client_browser(request),
     )
 
