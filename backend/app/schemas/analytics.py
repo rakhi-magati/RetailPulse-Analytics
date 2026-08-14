@@ -20,6 +20,17 @@ class AnalyticsKPIs(BaseModel):
     low_stock_products: int
     out_of_stock_products: int
     total_categories: int
+    total_discount: Decimal = Decimal(0)
+    total_tax: Decimal = Decimal(0)
+
+
+class SalesSummaryKPIs(BaseModel):
+    total_revenue: Decimal
+    total_orders: int
+    average_order_value: Decimal
+    total_products_sold: int
+    total_discount: Decimal
+    total_tax: Decimal
 
 
 # ---------------------------------------------------------------------------
@@ -54,6 +65,13 @@ class TopCategoryItem(BaseModel):
     revenue: Decimal
 
 
+class TopCustomerItem(BaseModel):
+    customer_name: str
+    orders: int
+    total_spend: Decimal
+    average_order_value: Decimal
+
+
 class PaymentMethodBreakdownItem(BaseModel):
     payment_method: PaymentMethod
     revenue: Decimal
@@ -64,6 +82,23 @@ class ChannelBreakdownItem(BaseModel):
     sales_channel: SalesChannel
     revenue: Decimal
     orders: int
+
+
+class SalesTrendResponse(BaseModel):
+    granularity: str
+    trend: List[RevenueTrendPoint]
+
+
+class TopProductsResponse(BaseModel):
+    products: List[TopProductItem]
+
+
+class TopCustomersResponse(BaseModel):
+    customers: List[TopCustomerItem]
+
+
+class PaymentMethodsResponse(BaseModel):
+    payment_methods: List[PaymentMethodBreakdownItem]
 
 
 # ---------------------------------------------------------------------------
@@ -121,6 +156,7 @@ class AnalyticsDashboardOut(BaseModel):
     low_stock_products: List[LowStockItem]
     out_of_stock_products: List[OutOfStockItem]
     inventory_value_by_category: List[InventoryValueByCategoryItem]
+    top_customers: List[TopCustomerItem] = []
 
 
 # ---------------------------------------------------------------------------

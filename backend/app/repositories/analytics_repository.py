@@ -16,8 +16,7 @@ from app.models.sale import Sale, SaleItem
 class AnalyticsFilters:
     """
     Carries every supported Dashboard Filter. Sales-side aggregations honour
-    every field; inventory-side aggregations only honour product/category/brand
-    (stock position has no notion of a sale date, channel, or payment method).
+    every field; inventory-side aggregations only honour product/category/brand.
     """
 
     date_from: Optional[datetime] = None
@@ -27,6 +26,8 @@ class AnalyticsFilters:
     brand: Optional[str] = None
     sales_channel: Optional[SalesChannel] = None
     payment_method: Optional[PaymentMethod] = None
+    customer_id: Optional[int] = None
+    customer_name: Optional[str] = None
 
     def is_active(self) -> bool:
         return any(
@@ -38,6 +39,8 @@ class AnalyticsFilters:
                 self.brand,
                 self.sales_channel,
                 self.payment_method,
+                self.customer_id,
+                self.customer_name,
             ]
         )
 
@@ -53,18 +56,15 @@ def trend_period(db: Session, granularity: str):
         if granularity == "daily":
             return func.date(Sale.sale_date)
         if granularity == "weekly":
-            # MySQL WEEKDAY() starts on Monday, matching PostgreSQL date_trunc('week').
             return func.subdate(func.date(Sale.sale_date), func.weekday(Sale.sale_date))
         return func.date_format(Sale.sale_date, "%Y-%m-01")
 
     return func.date_trunc(GRANULARITY_SQL.get(granularity, "day"), Sale.sale_date)
 
+
 def filtered_sale_items_query(db: Session, company_id: int, filters: AnalyticsFilters) -> Query:
     """
-    Base query joining SaleItem -> Sale -> Product, scoped to the company and
-    every applicable dashboard filter. Every sales aggregation (KPIs, trends,
-    top products/categories, payment/channel breakdowns) is derived from this
-    single query so that "revenue" always means the same thing everywhere.
+    Base query joining SaleItem -> Sale -> Product, scoped to company and filters.
     """
     query = (
         db.query(SaleItem, Sale, Product)
@@ -87,12 +87,16 @@ def filtered_sale_items_query(db: Session, company_id: int, filters: AnalyticsFi
         query = query.filter(Sale.sales_channel == filters.sales_channel)
     if filters.payment_method is not None:
         query = query.filter(Sale.payment_method == filters.payment_method)
+    if filters.customer_id is not None:
+        query = query.filter(Sale.customer_id == filters.customer_id)
+    if filters.customer_name:
+        query = query.filter(Sale.customer_name.ilike(f"%{filters.customer_name.strip()}%"))
 
     return query
 
 
 def filtered_inventory_query(db: Session, company_id: int, filters: AnalyticsFilters) -> Query:
-    """Base query joining Inventory -> Product -> Category, scoped to product/category/brand filters."""
+    """Base query joining Inventory -> Product -> Category."""
     query = (
         db.query(Inventory, Product, Category)
         .join(Product, Inventory.product_id == Product.id)
@@ -100,10 +104,7 @@ def filtered_inventory_query(db: Session, company_id: int, filters: AnalyticsFil
         .filter(Inventory.company_id == company_id)
     )
 
-    # Inventory is a current-stock snapshot. When a sales-side filter is set,
-    # scope that snapshot to products that participated in the filtered sales,
-    # so inventory KPIs remain consistent with every dashboard filter.
-    if any((filters.date_from, filters.date_to, filters.sales_channel, filters.payment_method)):
+    if any((filters.date_from, filters.date_to, filters.sales_channel, filters.payment_method, filters.customer_id, filters.customer_name)):
         matching_products = (
             db.query(SaleItem.product_id)
             .join(Sale, SaleItem.sale_id == Sale.id)
@@ -117,6 +118,10 @@ def filtered_inventory_query(db: Session, company_id: int, filters: AnalyticsFil
             matching_products = matching_products.filter(Sale.sales_channel == filters.sales_channel)
         if filters.payment_method is not None:
             matching_products = matching_products.filter(Sale.payment_method == filters.payment_method)
+        if filters.customer_id is not None:
+            matching_products = matching_products.filter(Sale.customer_id == filters.customer_id)
+        if filters.customer_name:
+            matching_products = matching_products.filter(Sale.customer_name.ilike(f"%{filters.customer_name.strip()}%"))
         query = query.filter(Product.id.in_(matching_products.distinct()))
 
     if filters.product_id is not None:
@@ -139,11 +144,15 @@ def sales_kpis(db: Session, company_id: int, filters: AnalyticsFilters) -> dict:
     total_revenue = base.with_entities(func.coalesce(func.sum(SaleItem.total), 0)).scalar() or 0
     total_products_sold = base.with_entities(func.coalesce(func.sum(SaleItem.quantity), 0)).scalar() or 0
     total_orders = base.with_entities(func.count(func.distinct(Sale.id))).scalar() or 0
+    total_discount = base.with_entities(func.coalesce(func.sum(SaleItem.discount), 0)).scalar() or 0
+    total_tax = base.with_entities(func.coalesce(func.sum(SaleItem.tax), 0)).scalar() or 0
 
     return {
         "total_revenue": total_revenue,
         "total_orders": total_orders,
         "total_products_sold": total_products_sold,
+        "total_discount": total_discount,
+        "total_tax": total_tax,
     }
 
 
@@ -205,8 +214,13 @@ def sales_trend(db: Session, company_id: int, filters: AnalyticsFilters, granula
     )
 
 
-def top_products(db: Session, company_id: int, filters: AnalyticsFilters, limit: int = 10):
+def top_products(db: Session, company_id: int, filters: AnalyticsFilters, limit: int = 10, sort_by: str = "revenue"):
     base = filtered_sale_items_query(db, company_id, filters)
+    if sort_by == "quantity":
+        order_clause = func.coalesce(func.sum(SaleItem.quantity), 0).desc()
+    else:
+        order_clause = func.coalesce(func.sum(SaleItem.total), 0).desc()
+
     return (
         base.with_entities(
             Product.id.label("product_id"),
@@ -218,7 +232,7 @@ def top_products(db: Session, company_id: int, filters: AnalyticsFilters, limit:
         )
         .join(Category, Product.category_id == Category.id)
         .group_by(Product.id, Product.name, Product.sku, Category.name)
-        .order_by(func.coalesce(func.sum(SaleItem.total), 0).desc())
+        .order_by(order_clause)
         .limit(limit)
         .all()
     )
@@ -236,6 +250,21 @@ def top_categories(db: Session, company_id: int, filters: AnalyticsFilters):
         .join(Category, Product.category_id == Category.id)
         .group_by(Category.id, Category.name)
         .order_by(func.coalesce(func.sum(SaleItem.total), 0).desc())
+        .all()
+    )
+
+
+def top_customers(db: Session, company_id: int, filters: AnalyticsFilters, limit: int = 10):
+    base = filtered_sale_items_query(db, company_id, filters)
+    return (
+        base.with_entities(
+            Sale.customer_name.label("customer_name"),
+            func.count(func.distinct(Sale.id)).label("orders"),
+            func.coalesce(func.sum(SaleItem.total), 0).label("total_spend"),
+        )
+        .group_by(Sale.customer_name)
+        .order_by(func.coalesce(func.sum(SaleItem.total), 0).desc())
+        .limit(limit)
         .all()
     )
 

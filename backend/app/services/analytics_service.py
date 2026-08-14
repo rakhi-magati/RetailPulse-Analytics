@@ -16,6 +16,7 @@ from app.services.audit_service import log_action
 
 VALID_GRANULARITIES = {"daily", "weekly", "monthly"}
 
+
 def _as_date(value) -> date:
     """Normalize PostgreSQL timestamps and MySQL date/string buckets for the API schema."""
     if isinstance(value, datetime):
@@ -23,6 +24,7 @@ def _as_date(value) -> date:
     if isinstance(value, date):
         return value
     return date.fromisoformat(str(value)[:10])
+
 
 VALID_KPI_KEYS = {
     "revenue": "sales",
@@ -52,7 +54,84 @@ def _describe_filters(filters: AnalyticsFilters) -> str:
         parts.append(f"channel={filters.sales_channel.value}")
     if filters.payment_method:
         parts.append(f"payment={filters.payment_method.value}")
+    if filters.customer_id:
+        parts.append(f"customer_id={filters.customer_id}")
+    if filters.customer_name:
+        parts.append(f"customer={filters.customer_name}")
     return "; ".join(parts) if parts else "none"
+
+
+def get_sales_summary(db: Session, company_id: int, filters: AnalyticsFilters) -> dict:
+    sales_kpis = analytics_repository.sales_kpis(db, company_id, filters)
+    total_revenue = Decimal(str(sales_kpis["total_revenue"]))
+    total_orders = sales_kpis["total_orders"]
+    average_order_value = (total_revenue / total_orders) if total_orders else Decimal("0")
+    total_discount = Decimal(str(sales_kpis.get("total_discount", 0)))
+    total_tax = Decimal(str(sales_kpis.get("total_tax", 0)))
+
+    return {
+        "total_revenue": total_revenue,
+        "total_orders": total_orders,
+        "average_order_value": average_order_value,
+        "total_products_sold": sales_kpis["total_products_sold"],
+        "total_discount": total_discount,
+        "total_tax": total_tax,
+    }
+
+
+def get_sales_trend(db: Session, company_id: int, filters: AnalyticsFilters, granularity: str = "daily") -> dict:
+    if granularity not in VALID_GRANULARITIES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"granularity must be one of {sorted(VALID_GRANULARITIES)}",
+        )
+    trend = [
+        {"period": _as_date(row.period), "revenue": Decimal(str(row.revenue)), "orders": row.orders}
+        for row in analytics_repository.revenue_trend(db, company_id, filters, granularity)
+    ]
+    return {"granularity": granularity, "trend": trend}
+
+
+def get_top_products(db: Session, company_id: int, filters: AnalyticsFilters, limit: int = 10, sort_by: str = "revenue") -> dict:
+    products = [
+        {
+            "product_id": row.product_id,
+            "product_name": row.product_name,
+            "sku": row.sku,
+            "category_name": row.category_name,
+            "quantity_sold": row.quantity_sold,
+            "revenue": Decimal(str(row.revenue)),
+        }
+        for row in analytics_repository.top_products(db, company_id, filters, limit=limit, sort_by=sort_by)
+    ]
+    return {"products": products}
+
+
+def get_top_customers(db: Session, company_id: int, filters: AnalyticsFilters, limit: int = 10) -> dict:
+    customers = []
+    for row in analytics_repository.top_customers(db, company_id, filters, limit=limit):
+        total_spend = Decimal(str(row.total_spend))
+        orders = row.orders
+        aov = (total_spend / orders) if orders else Decimal("0")
+        customers.append({
+            "customer_name": row.customer_name,
+            "orders": orders,
+            "total_spend": total_spend,
+            "average_order_value": aov,
+        })
+    return {"customers": customers}
+
+
+def get_payment_methods(db: Session, company_id: int, filters: AnalyticsFilters) -> dict:
+    payment_methods = [
+        {
+            "payment_method": row.payment_method,
+            "revenue": Decimal(str(row.revenue)),
+            "orders": row.orders,
+        }
+        for row in analytics_repository.by_payment_method(db, company_id, filters)
+    ]
+    return {"payment_methods": payment_methods}
 
 
 def get_dashboard(
@@ -72,23 +151,23 @@ def get_dashboard(
     if filters.date_from and filters.date_to and filters.date_from > filters.date_to:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="date_from cannot be after date_to")
 
-    sales_kpis = analytics_repository.sales_kpis(db, company_id, filters)
+    sales_summary = get_sales_summary(db, company_id, filters)
     inventory_kpis = analytics_repository.inventory_kpis(db, company_id, filters)
 
-    total_revenue = Decimal(str(sales_kpis["total_revenue"]))
-    total_orders = sales_kpis["total_orders"]
-    average_order_value = (total_revenue / total_orders) if total_orders else Decimal("0")
-
     kpis = {
-        "total_revenue": total_revenue,
-        "total_orders": total_orders,
-        "total_products_sold": sales_kpis["total_products_sold"],
-        "average_order_value": average_order_value,
+        "total_revenue": sales_summary["total_revenue"],
+        "total_orders": sales_summary["total_orders"],
+        "total_products_sold": sales_summary["total_products_sold"],
+        "average_order_value": sales_summary["average_order_value"],
         "total_inventory_value": Decimal(str(inventory_kpis["total_inventory_value"])),
         "low_stock_products": inventory_kpis["low_stock_products"],
         "out_of_stock_products": inventory_kpis["out_of_stock_products"],
         "total_categories": inventory_kpis["total_categories"],
+        "total_discount": sales_summary["total_discount"],
+        "total_tax": sales_summary["total_tax"],
     }
+
+    top_cust_data = get_top_customers(db, company_id, filters, limit=10)["customers"]
 
     payload = {
         "kpis": kpis,
@@ -102,6 +181,7 @@ def get_dashboard(
         ],
         "top_products": [row._asdict() for row in analytics_repository.top_products(db, company_id, filters)],
         "top_categories": [row._asdict() for row in analytics_repository.top_categories(db, company_id, filters)],
+        "top_customers": top_cust_data,
         "by_payment_method": [
             row._asdict() for row in analytics_repository.by_payment_method(db, company_id, filters)
         ],
@@ -206,15 +286,15 @@ def export_report(
     )
 
     if export_format == "csv":
-        return _build_csv(dashboard), "text/csv", "analytics-report.csv"
-    return _build_pdf(dashboard), "application/pdf", "analytics-report.pdf"
+        return _build_csv(dashboard), "text/csv", "sales-analytics-report.csv"
+    return _build_pdf(dashboard), "application/pdf", "sales-analytics-report.pdf"
 
 
 def _build_csv(dashboard: dict) -> bytes:
     buffer = io.StringIO()
     writer = csv.writer(buffer)
 
-    writer.writerow(["RetailPulse Analytics Report"])
+    writer.writerow(["RetailPulse Sales Analytics Report"])
     writer.writerow(["Generated At", datetime.utcnow().isoformat()])
     writer.writerow([])
 
@@ -227,28 +307,20 @@ def _build_csv(dashboard: dict) -> bytes:
     writer.writerow(["Product", "SKU", "Category", "Quantity Sold", "Revenue"])
     for item in dashboard["top_products"]:
         writer.writerow(
-            [item["product_name"], item["sku"], item["category_name"], item["quantity_sold"], item["revenue"]]
+            [item["product_name"], item["sku"], item.get("category_name", ""), item["quantity_sold"], item["revenue"]]
         )
     writer.writerow([])
 
-    writer.writerow(["Top Performing Categories"])
-    writer.writerow(["Category", "Quantity Sold", "Revenue"])
-    for item in dashboard["top_categories"]:
-        writer.writerow([item["category_name"], item["quantity_sold"], item["revenue"]])
+    writer.writerow(["Top Customers"])
+    writer.writerow(["Customer Name", "Orders", "Total Spend", "Average Order Value"])
+    for cust in dashboard.get("top_customers", []):
+        writer.writerow([cust["customer_name"], cust["orders"], cust["total_spend"], cust["average_order_value"]])
     writer.writerow([])
 
-    writer.writerow(["Low Stock Products"])
-    writer.writerow(["Product", "SKU", "Category", "Available Stock", "Reorder Level"])
-    for item in dashboard["low_stock_products"]:
-        writer.writerow(
-            [item["product_name"], item["sku"], item["category_name"], item["available_stock"], item["reorder_level"]]
-        )
-    writer.writerow([])
-
-    writer.writerow(["Out of Stock Products"])
-    writer.writerow(["Product", "SKU", "Category"])
-    for item in dashboard["out_of_stock_products"]:
-        writer.writerow([item["product_name"], item["sku"], item["category_name"]])
+    writer.writerow(["Payment Method Breakdown"])
+    writer.writerow(["Payment Method", "Transactions", "Revenue"])
+    for pm in dashboard.get("by_payment_method", []):
+        writer.writerow([pm["payment_method"], pm["orders"], pm["revenue"]])
 
     return buffer.getvalue().encode("utf-8")
 
@@ -261,7 +333,7 @@ def _build_pdf(dashboard: dict) -> bytes:
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
-    story = [Paragraph("RetailPulse Analytics Report", styles["Title"]), Spacer(1, 12)]
+    story = [Paragraph("RetailPulse Sales Analytics Report", styles["Title"]), Spacer(1, 12)]
 
     story.append(Paragraph("KPI Summary", styles["Heading2"]))
     kpi_rows = [["Metric", "Value"]] + [
@@ -272,18 +344,19 @@ def _build_pdf(dashboard: dict) -> bytes:
 
     story.append(Paragraph("Top Selling Products", styles["Heading2"]))
     product_rows = [["Product", "SKU", "Category", "Qty Sold", "Revenue"]] + [
-        [p["product_name"], p["sku"], p["category_name"] or "-", str(p["quantity_sold"]), str(p["revenue"])]
+        [p["product_name"], p["sku"], p.get("category_name") or "-", str(p["quantity_sold"]), str(p["revenue"])]
         for p in dashboard["top_products"]
     ]
     story.append(_styled_table(product_rows))
     story.append(Spacer(1, 16))
 
-    story.append(Paragraph("Low Stock Products", styles["Heading2"]))
-    low_stock_rows = [["Product", "SKU", "Available", "Reorder Level"]] + [
-        [p["product_name"], p["sku"], str(p["available_stock"]), str(p["reorder_level"])]
-        for p in dashboard["low_stock_products"]
-    ]
-    story.append(_styled_table(low_stock_rows))
+    if dashboard.get("top_customers"):
+        story.append(Paragraph("Top Customers", styles["Heading2"]))
+        customer_rows = [["Customer Name", "Orders", "Total Spend", "AOV"]] + [
+            [c["customer_name"], str(c["orders"]), str(c["total_spend"]), str(c["average_order_value"])]
+            for c in dashboard["top_customers"]
+        ]
+        story.append(_styled_table(customer_rows))
 
     doc.build(story)
     return buffer.getvalue()

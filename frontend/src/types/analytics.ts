@@ -2,6 +2,7 @@ import type { PaymentMethod, SalesChannel } from "./sales";
 import type { StockStatus } from "./inventory";
 
 export type Granularity = "daily" | "weekly" | "monthly";
+export type DateRangePreset = "today" | "last_7_days" | "last_30_days" | "this_month" | "last_month" | "custom";
 
 export interface AnalyticsFilters {
   date_from?: string;
@@ -11,6 +12,8 @@ export interface AnalyticsFilters {
   brand?: string;
   sales_channel?: SalesChannel;
   payment_method?: PaymentMethod;
+  customer_id?: number;
+  customer_name?: string;
 }
 
 export interface AnalyticsKPIs {
@@ -22,6 +25,17 @@ export interface AnalyticsKPIs {
   low_stock_products: number;
   out_of_stock_products: number;
   total_categories: number;
+  total_discount?: number;
+  total_tax?: number;
+}
+
+export interface SalesSummaryKPIs {
+  total_revenue: number;
+  total_orders: number;
+  average_order_value: number;
+  total_products_sold: number;
+  total_discount: number;
+  total_tax: number;
 }
 
 export interface RevenueTrendPoint {
@@ -50,6 +64,13 @@ export interface TopCategoryItem {
   category_name: string;
   quantity_sold: number;
   revenue: number;
+}
+
+export interface TopCustomerItem {
+  customer_name: string;
+  orders: number;
+  total_spend: number;
+  average_order_value: number;
 }
 
 export interface PaymentMethodBreakdownItem {
@@ -104,6 +125,7 @@ export interface AnalyticsDashboard {
   sales_trend: SalesTrendPoint[];
   top_products: TopProductItem[];
   top_categories: TopCategoryItem[];
+  top_customers?: TopCustomerItem[];
   by_payment_method: PaymentMethodBreakdownItem[];
   by_channel: ChannelBreakdownItem[];
   inventory_distribution: InventoryDistributionItem[];

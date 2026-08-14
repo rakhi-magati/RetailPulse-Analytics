@@ -1,38 +1,817 @@
 ﻿import "./ForecastPage.css";
+
 import { useMemo, useState } from "react";
-import { Alert, Box, Button, Chip, Grid, MenuItem, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@mui/material";
+
+import {
+    Alert,
+    Box,
+    Button,
+    Chip,
+    Grid,
+    MenuItem,
+    Paper,
+    Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Typography,
+} from "@mui/material";
+
 import AutoGraphOutlinedIcon from "@mui/icons-material/AutoGraphOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+import {
+    useMutation,
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
+
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Legend,
+    Line,
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from "recharts";
+
 import { forecastApi } from "../../api/forecasts";
 import type { ForecastPeriod } from "../../types/forecast";
 import RoleGuard from "../../components/RoleGuard";
 import { useAuth } from "../../context/AuthContext";
 
-const periodLabels: Record<ForecastPeriod, string> = { "7d": "Next 7 Days", "30d": "Next 30 Days", "90d": "Next 90 Days", custom: "Custom Date Range" };
-const downloadFile = (blob: Blob, name: string) => { const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = name; link.click(); URL.revokeObjectURL(url); };
-const recommendationColor = (value: string) => value === "Stock Level Healthy" ? "success" : value === "Overstock Risk" ? "warning" : "error";
+const periodLabels: Record<ForecastPeriod, string> = {
+    "7d": "Next 7 Days",
+    "30d": "Next 30 Days",
+    "90d": "Next 90 Days",
+    custom: "Custom Date Range",
+};
+
+const downloadFile = (blob: Blob, name: string) => {
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name;
+    link.click();
+
+    URL.revokeObjectURL(url);
+};
+
+const recommendationColor = (
+    value: string
+): "success" | "warning" | "error" => {
+    if (value === "Stock Level Healthy") {
+        return "success";
+    }
+
+    if (value === "Overstock Risk") {
+        return "warning";
+    }
+
+    return "error";
+};
 
 export default function ForecastPage() {
-    const { user } = useAuth(); const queryClient = useQueryClient(); const [period, setPeriod] = useState<ForecastPeriod>("30d"); const [from, setFrom] = useState(""); const [to, setTo] = useState(""); const [search, setSearch] = useState(""); const [sort, setSort] = useState("predicted_demand");
-    const isCustomRangeInvalid = period === "custom" && (!from || !to); const payload = { forecast_period: period, date_from: period === "custom" ? from || undefined : undefined, date_to: period === "custom" ? to || undefined : undefined };
-    const dashboardQuery = useQuery({ queryKey: ["forecasts", period, from, to, sort], queryFn: () => forecastApi.dashboard({ ...payload, sort_by: sort }), enabled: !isCustomRangeInvalid });
-    const forecastMutation = useMutation({ mutationFn: (refresh: boolean) => refresh ? forecastApi.refresh(payload) : forecastApi.generate(payload), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["forecasts"] }) });
-    const rows = useMemo(() => (dashboardQuery.data?.products ?? []).filter((item) => `${item.product_name} ${item.category_name} ${item.brand ?? ""}`.toLowerCase().includes(search.toLowerCase())), [dashboardQuery.data, search]);
-    const errorMessage = (dashboardQuery.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || (forecastMutation.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-    const exportReport = (type: "demand" | "product" | "category") => forecastApi.export(type, payload).then((blob) => downloadFile(blob, type === "product" ? "product-forecast-report.pdf" : `${type}-forecast-report.csv`));
-    return <RoleGuard allowedRoles={["COMPANY_ADMIN", "ANALYST"]}><Box className="forecast-page">
-        <Box className="forecast-header"><Box><Typography variant="h4" fontWeight={700}>Demand Forecasting</Typography><Typography color="text.secondary">Predict demand, anticipate stock needs, and act early.</Typography></Box><Box className="forecast-actions"><Button variant="outlined" startIcon={<DownloadOutlinedIcon />} disabled={!dashboardQuery.data?.products.length} onClick={() => exportReport("demand")}>Demand CSV</Button><Button variant="outlined" startIcon={<DownloadOutlinedIcon />} disabled={!dashboardQuery.data?.products.length} onClick={() => exportReport("product")}>Product PDF</Button>{user?.role === "COMPANY_ADMIN" && <Button variant="contained" startIcon={<AutoGraphOutlinedIcon />} disabled={forecastMutation.isPending || isCustomRangeInvalid} onClick={() => forecastMutation.mutate(false)}>Generate Forecast</Button>}</Box></Box>
-        <Paper className="forecast-filters"><TextField select label="Forecast period" value={period} onChange={(event) => setPeriod(event.target.value as ForecastPeriod)}>{Object.entries(periodLabels).map(([value, label]) => <MenuItem key={value} value={value}>{label}</MenuItem>)}</TextField>{period === "custom" && <><TextField label="From" type="date" value={from} onChange={(event) => setFrom(event.target.value)} slotProps={{ inputLabel: { shrink: true } }} /><TextField label="To" type="date" value={to} onChange={(event) => setTo(event.target.value)} slotProps={{ inputLabel: { shrink: true } }} /></>}<TextField label="Search product, category or brand" value={search} onChange={(event) => setSearch(event.target.value)} /><TextField select label="Sort" value={sort} onChange={(event) => setSort(event.target.value)}><MenuItem value="predicted_demand">Highest predicted demand</MenuItem><MenuItem value="lowest_stock">Lowest stock</MenuItem><MenuItem value="growth">Highest growth</MenuItem><MenuItem value="accuracy">Forecast accuracy</MenuItem></TextField>{user?.role === "COMPANY_ADMIN" && <Button startIcon={<RefreshOutlinedIcon />} disabled={forecastMutation.isPending || isCustomRangeInvalid} onClick={() => forecastMutation.mutate(true)}>Refresh</Button>}</Paper>
-        {isCustomRangeInvalid && <Alert severity="info" sx={{ mb: 2 }}>Choose both dates to view a custom forecast.</Alert>}{errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}{forecastMutation.isSuccess && <Alert severity="success" sx={{ mb: 2 }}>Forecast {forecastMutation.data.message.toLowerCase()} successfully.</Alert>}
-        {dashboardQuery.isLoading && <Grid container spacing={2} className="forecast-kpis">{Array.from({ length: 5 }).map((_, index) => <Grid key={index} size={{ xs: 12, sm: 6, lg: 2.4 }}><Paper className="forecast-kpi"><Skeleton height={72} /></Paper></Grid>)}</Grid>}
-        {!dashboardQuery.isLoading && !errorMessage && !isCustomRangeInvalid && rows.length === 0 && <Alert severity="info" sx={{ mb: 2 }}>No forecast exists for this period. Click <b>Generate Forecast</b> after recording sales for active products.</Alert>}
-        {dashboardQuery.data && <><Grid container spacing={2} className="forecast-kpis">{[["Total Predicted Demand", dashboardQuery.data.kpis.total_predicted_demand], ["Expected to Run Out", dashboardQuery.data.kpis.products_expected_to_run_out], ["High Growth Products", dashboardQuery.data.kpis.high_growth_products], ["Slow Moving Products", dashboardQuery.data.kpis.slow_moving_products], ["Forecast Accuracy", `${dashboardQuery.data.kpis.forecast_accuracy}%`]].map(([label, value]) => <Grid key={String(label)} size={{ xs: 12, sm: 6, lg: 2.4 }}><Paper className="forecast-kpi"><Typography variant="body2" color="text.secondary">{label}</Typography><Typography variant="h5" fontWeight={700}>{value}</Typography></Paper></Grid>)}</Grid>
-            <Grid container spacing={3} sx={{ mb: 3 }}><Grid size={{ xs: 12, lg: 7 }}><Paper className="forecast-card"><Typography variant="h6">Historical Sales vs Forecast</Typography><ResponsiveContainer width="100%" height={280}><BarChart data={dashboardQuery.data.historical_vs_forecast}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="product_name" hide /><YAxis allowDecimals={false} /><Tooltip /><Legend /><Bar dataKey="historical_sales" name="Historical" fill="#94A3B8" /><Bar dataKey="predicted_demand" name="Forecast" fill="#5146E5" /></BarChart></ResponsiveContainer></Paper></Grid><Grid size={{ xs: 12, lg: 5 }}><Paper className="forecast-card"><Typography variant="h6">Seasonal Sales Pattern</Typography><ResponsiveContainer width="100%" height={280}><LineChart data={dashboardQuery.data.seasonal_sales_pattern}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis allowDecimals={false} /><Tooltip /><Line type="monotone" dataKey="sales" stroke="#10B981" strokeWidth={3} /></LineChart></ResponsiveContainer></Paper></Grid></Grid>
-            <Grid container spacing={3} sx={{ mb: 3 }}><Grid size={{ xs: 12, lg: 6 }}><Paper className="forecast-card"><Typography variant="h6">Category Demand Trend</Typography><ResponsiveContainer width="100%" height={240}><BarChart data={dashboardQuery.data.categories}><XAxis dataKey="category_name" /><YAxis allowDecimals={false} /><Tooltip /><Bar dataKey="predicted_demand" name="Forecast" fill="#8B5CF6" /></BarChart></ResponsiveContainer></Paper></Grid><Grid size={{ xs: 12, lg: 6 }}><Paper className="forecast-card"><Typography variant="h6">Top Predicted Products</Typography><ResponsiveContainer width="100%" height={240}><BarChart data={dashboardQuery.data.top_predicted_products} layout="vertical"><XAxis type="number" allowDecimals={false} /><YAxis type="category" dataKey="product_name" width={120} /><Tooltip /><Bar dataKey="predicted_demand" name="Forecast" fill="#F59E0B" /></BarChart></ResponsiveContainer></Paper></Grid></Grid>
-            <Paper className="forecast-table-card"><Typography variant="h6">Product-level Forecasts</Typography><TableContainer><Table size="small"><TableHead><TableRow><TableCell>Product</TableCell><TableCell>Category</TableCell><TableCell align="right">Current Stock</TableCell><TableCell align="right">Historical Sales</TableCell><TableCell align="right">Predicted Demand</TableCell><TableCell>Forecast Period</TableCell><TableCell align="right">Confidence</TableCell><TableCell>Recommendation</TableCell></TableRow></TableHead><TableBody>{rows.map((item) => <TableRow key={item.id} hover><TableCell>{item.product_name}<Typography variant="caption" display="block" color="text.secondary">{item.brand || "No brand"}</Typography></TableCell><TableCell>{item.category_name}</TableCell><TableCell align="right">{item.current_stock}</TableCell><TableCell align="right">{item.historical_sales}</TableCell><TableCell align="right"><b>{item.predicted_demand}</b></TableCell><TableCell>{periodLabels[item.forecast_period]}</TableCell><TableCell align="right">{item.confidence_score}%</TableCell><TableCell><Chip size="small" color={recommendationColor(item.recommendation)} label={item.recommendation} /></TableCell></TableRow>)}</TableBody></Table></TableContainer></Paper>
-        </>}
-    </Box></RoleGuard>;
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
+
+    const [period, setPeriod] = useState<ForecastPeriod>("30d");
+    const [from, setFrom] = useState("");
+    const [to, setTo] = useState("");
+    const [search, setSearch] = useState("");
+    const [sort, setSort] = useState("predicted_demand");
+
+    const isCustomRangeInvalid =
+        period === "custom" && (!from || !to);
+
+    const payload = {
+        forecast_period: period,
+        date_from:
+            period === "custom"
+                ? from || undefined
+                : undefined,
+        date_to:
+            period === "custom"
+                ? to || undefined
+                : undefined,
+    };
+
+    const dashboardQuery = useQuery({
+        queryKey: [
+            "forecasts",
+            period,
+            from,
+            to,
+            sort,
+        ],
+        queryFn: () =>
+            forecastApi.dashboard({
+                ...payload,
+                sort_by: sort,
+            }),
+        enabled: !isCustomRangeInvalid,
+    });
+
+    const forecastMutation = useMutation({
+        mutationFn: (refresh: boolean) =>
+            refresh
+                ? forecastApi.refresh(payload)
+                : forecastApi.generate(payload),
+
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["forecasts"],
+            });
+        },
+    });
+
+    const rows = useMemo(() => {
+        const products = dashboardQuery.data?.products ?? [];
+
+        return products.filter((item) =>
+            `${item.product_name} ${item.category_name} ${
+                item.brand ?? ""
+            }`
+                .toLowerCase()
+                .includes(search.toLowerCase())
+        );
+    }, [dashboardQuery.data, search]);
+
+    const errorMessage =
+        (
+            dashboardQuery.error as {
+                response?: {
+                    data?: {
+                        detail?: string;
+                    };
+                };
+            }
+        )?.response?.data?.detail ||
+        (
+            forecastMutation.error as {
+                response?: {
+                    data?: {
+                        detail?: string;
+                    };
+                };
+            }
+        )?.response?.data?.detail;
+
+    const exportReport = (
+        type: "demand" | "product" | "category"
+    ) => {
+        forecastApi
+            .export(type, payload)
+            .then((blob) =>
+                downloadFile(
+                    blob,
+                    type === "product"
+                        ? "product-forecast-report.pdf"
+                        : `${type}-forecast-report.csv`
+                )
+            );
+    };
+
+    return (
+        <RoleGuard
+            allowedRoles={[
+                "COMPANY_ADMIN",
+                "ANALYST",
+            ]}
+        >
+            <Box className="forecast-page">
+                {/* Header */}
+                <Box className="forecast-header">
+                    <Box>
+                        <Typography
+                            variant="h4"
+                            fontWeight={700}
+                        >
+                            Demand Forecasting
+                        </Typography>
+
+                        <Typography color="text.secondary">
+                            Predict demand, anticipate stock
+                            needs, and act early.
+                        </Typography>
+                    </Box>
+
+                    <Box className="forecast-actions">
+                        <Button
+                            variant="outlined"
+                            startIcon={
+                                <DownloadOutlinedIcon />
+                            }
+                            disabled={
+                                !dashboardQuery.data?.products
+                                    .length
+                            }
+                            onClick={() =>
+                                exportReport("demand")
+                            }
+                        >
+                            Demand CSV
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            startIcon={
+                                <DownloadOutlinedIcon />
+                            }
+                            disabled={
+                                !dashboardQuery.data?.products
+                                    .length
+                            }
+                            onClick={() =>
+                                exportReport("product")
+                            }
+                        >
+                            Product PDF
+                        </Button>
+
+                        {user?.role === "COMPANY_ADMIN" && (
+                            <Button
+                                variant="contained"
+                                startIcon={
+                                    <AutoGraphOutlinedIcon />
+                                }
+                                disabled={
+                                    forecastMutation.isPending ||
+                                    isCustomRangeInvalid
+                                }
+                                onClick={() =>
+                                    forecastMutation.mutate(false)
+                                }
+                            >
+                                Generate Forecast
+                            </Button>
+                        )}
+                    </Box>
+                </Box>
+
+                {/* Filters */}
+                <Paper className="forecast-filters">
+                    <TextField
+                        select
+                        label="Forecast period"
+                        value={period}
+                        onChange={(event) =>
+                            setPeriod(
+                                event.target.value as ForecastPeriod
+                            )
+                        }
+                    >
+                        {Object.entries(periodLabels).map(
+                            ([value, label]) => (
+                                <MenuItem
+                                    key={value}
+                                    value={value}
+                                >
+                                    {label}
+                                </MenuItem>
+                            )
+                        )}
+                    </TextField>
+
+                    {period === "custom" && (
+                        <>
+                            <TextField
+                                label="From"
+                                type="date"
+                                value={from}
+                                onChange={(event) =>
+                                    setFrom(event.target.value)
+                                }
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
+                                }}
+                            />
+
+                            <TextField
+                                label="To"
+                                type="date"
+                                value={to}
+                                onChange={(event) =>
+                                    setTo(event.target.value)
+                                }
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
+                                }}
+                            />
+                        </>
+                    )}
+
+                    <TextField
+                        label="Search product, category or brand"
+                        value={search}
+                        onChange={(event) =>
+                            setSearch(event.target.value)
+                        }
+                    />
+
+                    <TextField
+                        select
+                        label="Sort"
+                        value={sort}
+                        onChange={(event) =>
+                            setSort(event.target.value)
+                        }
+                    >
+                        <MenuItem value="predicted_demand">
+                            Highest predicted demand
+                        </MenuItem>
+
+                        <MenuItem value="lowest_stock">
+                            Lowest stock
+                        </MenuItem>
+
+                        <MenuItem value="growth">
+                            Highest growth
+                        </MenuItem>
+
+                        <MenuItem value="accuracy">
+                            Forecast accuracy
+                        </MenuItem>
+                    </TextField>
+
+                    {user?.role === "COMPANY_ADMIN" && (
+                        <Button
+                            startIcon={
+                                <RefreshOutlinedIcon />
+                            }
+                            disabled={
+                                forecastMutation.isPending ||
+                                isCustomRangeInvalid
+                            }
+                            onClick={() =>
+                                forecastMutation.mutate(true)
+                            }
+                        >
+                            Refresh
+                        </Button>
+                    )}
+                </Paper>
+
+                {/* Alerts */}
+                {isCustomRangeInvalid && (
+                    <Alert
+                        severity="info"
+                        sx={{ mb: 2 }}
+                    >
+                        Choose both dates to view a custom
+                        forecast.
+                    </Alert>
+                )}
+
+                {errorMessage && (
+                    <Alert
+                        severity="error"
+                        sx={{ mb: 2 }}
+                    >
+                        {errorMessage}
+                    </Alert>
+                )}
+
+                {forecastMutation.isSuccess && (
+                    <Alert
+                        severity="success"
+                        sx={{ mb: 2 }}
+                    >
+                        Forecast{" "}
+                        {forecastMutation.data.message.toLowerCase()}{" "}
+                        successfully.
+                    </Alert>
+                )}
+
+                {/* Loading Skeleton */}
+                {dashboardQuery.isLoading && (
+                    <Grid
+                        container
+                        spacing={2}
+                        className="forecast-kpis"
+                    >
+                        {Array.from({ length: 5 }).map(
+                            (_, index) => (
+                                <Grid
+                                    key={index}
+                                    size={{
+                                        xs: 12,
+                                        sm: 6,
+                                        lg: 2.4,
+                                    }}
+                                >
+                                    <Paper className="forecast-kpi">
+                                        <Skeleton height={72} />
+                                    </Paper>
+                                </Grid>
+                            )
+                        )}
+                    </Grid>
+                )}
+
+                {/* Empty State */}
+                {!dashboardQuery.isLoading &&
+                    !errorMessage &&
+                    !isCustomRangeInvalid &&
+                    rows.length === 0 && (
+                        <Alert
+                            severity="info"
+                            sx={{ mb: 2 }}
+                        >
+                            No forecast exists for this period.
+                            Click{" "}
+                            <b>Generate Forecast</b> after
+                            recording sales for active products.
+                        </Alert>
+                    )}
+
+                {dashboardQuery.data && (
+                    <>
+                        {/* KPI Cards */}
+                        <Grid
+                            container
+                            spacing={2}
+                            className="forecast-kpis"
+                        >
+                            {[
+                                [
+                                    "Total Predicted Demand",
+                                    dashboardQuery.data.kpis
+                                        .total_predicted_demand,
+                                ],
+                                [
+                                    "Expected to Run Out",
+                                    dashboardQuery.data.kpis
+                                        .products_expected_to_run_out,
+                                ],
+                                [
+                                    "High Growth Products",
+                                    dashboardQuery.data.kpis
+                                        .high_growth_products,
+                                ],
+                                [
+                                    "Slow Moving Products",
+                                    dashboardQuery.data.kpis
+                                        .slow_moving_products,
+                                ],
+                                [
+                                    "Forecast Accuracy",
+                                    `${dashboardQuery.data.kpis.forecast_accuracy}%`,
+                                ],
+                            ].map(([label, value]) => (
+                                <Grid
+                                    key={String(label)}
+                                    size={{
+                                        xs: 12,
+                                        sm: 6,
+                                        lg: 2.4,
+                                    }}
+                                >
+                                    <Paper className="forecast-kpi">
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                        >
+                                            {label}
+                                        </Typography>
+
+                                        <Typography
+                                            variant="h5"
+                                            fontWeight={700}
+                                        >
+                                            {value}
+                                        </Typography>
+                                    </Paper>
+                                </Grid>
+                            ))}
+                        </Grid>
+
+                        {/* Historical Sales vs Forecast */}
+                        <Grid
+                            container
+                            spacing={3}
+                            sx={{ mb: 3 }}
+                        >
+                            <Grid
+                                size={{
+                                    xs: 12,
+                                    lg: 7,
+                                }}
+                            >
+                                <Paper className="forecast-card">
+                                    <Typography variant="h6">
+                                        Historical Sales vs Forecast
+                                    </Typography>
+
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={280}
+                                    >
+                                        <BarChart
+                                            data={
+                                                dashboardQuery
+                                                    .data
+                                                    .historical_vs_forecast
+                                            }
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" />
+
+                                            <XAxis
+                                                dataKey="product_name"
+                                                hide
+                                            />
+
+                                            <YAxis allowDecimals={false} />
+
+                                            <Tooltip />
+
+                                            <Legend />
+
+                                            <Bar
+                                                dataKey="historical_sales"
+                                                name="Historical"
+                                                fill="#94A3B8"
+                                            />
+
+                                            <Bar
+                                                dataKey="predicted_demand"
+                                                name="Forecast"
+                                                fill="#5146E5"
+                                            />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Paper>
+                            </Grid>
+
+                            {/* Seasonal Sales Pattern */}
+                            <Grid
+                                size={{
+                                    xs: 12,
+                                    lg: 5,
+                                }}
+                            >
+                                <Paper className="forecast-card">
+                                    <Typography variant="h6">
+                                        Seasonal Sales Pattern
+                                    </Typography>
+
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={280}
+                                    >
+                                        <LineChart
+                                            data={
+                                                dashboardQuery
+                                                    .data
+                                                    .seasonal_sales_pattern
+                                            }
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" />
+
+                                            <XAxis dataKey="month" />
+
+                                            <YAxis allowDecimals={false} />
+
+                                            <Tooltip />
+
+                                            <Line
+                                                type="monotone"
+                                                dataKey="sales"
+                                                stroke="#10B981"
+                                                strokeWidth={3}
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+
+                        {/* Category Demand + Top Products */}
+                        <Grid
+                            container
+                            spacing={3}
+                            sx={{ mb: 3 }}
+                        >
+                            <Grid
+                                size={{
+                                    xs: 12,
+                                    lg: 6,
+                                }}
+                            >
+                                <Paper className="forecast-card">
+                                    <Typography variant="h6">
+                                        Category Demand Trend
+                                    </Typography>
+
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={240}
+                                    >
+                                        <BarChart
+                                            data={
+                                                dashboardQuery
+                                                    .data
+                                                    .categories
+                                            }
+                                        >
+                                            <XAxis
+                                                dataKey="category_name"
+                                            />
+
+                                            <YAxis allowDecimals={false} />
+
+                                            <Tooltip />
+
+                                            <Bar
+                                                dataKey="predicted_demand"
+                                                name="Forecast"
+                                                fill="#8B5CF6"
+                                            />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Paper>
+                            </Grid>
+
+                            <Grid
+                                size={{
+                                    xs: 12,
+                                    lg: 6,
+                                }}
+                            >
+                                <Paper className="forecast-card">
+                                    <Typography variant="h6">
+                                        Top Predicted Products
+                                    </Typography>
+
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={240}
+                                    >
+                                        <BarChart
+                                            data={
+                                                dashboardQuery
+                                                    .data
+                                                    .top_predicted_products
+                                            }
+                                            layout="vertical"
+                                        >
+                                            <XAxis
+                                                type="number"
+                                                allowDecimals={false}
+                                            />
+
+                                            <YAxis
+                                                type="category"
+                                                dataKey="product_name"
+                                                width={120}
+                                            />
+
+                                            <Tooltip />
+
+                                            <Bar
+                                                dataKey="predicted_demand"
+                                                name="Forecast"
+                                                fill="#F59E0B"
+                                            />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+
+                        {/* Product Forecast Table */}
+                        <Paper className="forecast-table-card">
+                            <Typography variant="h6">
+                                Product-level Forecasts
+                            </Typography>
+
+                            <TableContainer>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>
+                                                Product
+                                            </TableCell>
+
+                                            <TableCell>
+                                                Category
+                                            </TableCell>
+
+                                            <TableCell align="right">
+                                                Current Stock
+                                            </TableCell>
+
+                                            <TableCell align="right">
+                                                Historical Sales
+                                            </TableCell>
+
+                                            <TableCell align="right">
+                                                Predicted Demand
+                                            </TableCell>
+
+                                            <TableCell>
+                                                Forecast Period
+                                            </TableCell>
+
+                                            <TableCell align="right">
+                                                Confidence
+                                            </TableCell>
+
+                                            <TableCell>
+                                                Recommendation
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableHead>
+
+                                    <TableBody>
+                                        {rows.map((item) => (
+                                            <TableRow
+                                                key={item.id}
+                                                hover
+                                            >
+                                                <TableCell>
+                                                    {item.product_name}
+
+                                                    <Typography
+                                                        variant="caption"
+                                                        display="block"
+                                                        color="text.secondary"
+                                                    >
+                                                        {item.brand ||
+                                                            "No brand"}
+                                                    </Typography>
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    {item.category_name}
+                                                </TableCell>
+
+                                                <TableCell align="right">
+                                                    {item.current_stock}
+                                                </TableCell>
+
+                                                <TableCell align="right">
+                                                    {item.historical_sales}
+                                                </TableCell>
+
+                                                <TableCell align="right">
+                                                    <b>
+                                                        {
+                                                            item.predicted_demand
+                                                        }
+                                                    </b>
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    {
+                                                        periodLabels[
+                                                            item
+                                                                .forecast_period
+                                                        ]
+                                                    }
+                                                </TableCell>
+
+                                                <TableCell align="right">
+                                                    {
+                                                        item.confidence_score
+                                                    }
+                                                    %
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <Chip
+                                                        size="small"
+                                                        color={recommendationColor(
+                                                            item.recommendation
+                                                        )}
+                                                        label={
+                                                            item.recommendation
+                                                        }
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Paper>
+                    </>
+                )}
+            </Box>
+        </RoleGuard>
+    );
 }

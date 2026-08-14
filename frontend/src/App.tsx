@@ -1,19 +1,16 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-// import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
-// import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
-// import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/Dashboardpage/DashboardPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import CategoriesPage from "./pages/CategoriesPage/CategoriesPage";
 import ProductsPage from "./pages/ProductsPage/ProductsPage";
 import SalesPage from "./pages/SalesPage/SalesPage";
-// import InventoryPage from "./pages/InventoryPage";
 import AnalyticsDashboardPage from "./pages/AnalyticsDashboardPage/AnalyticsDashboardPage";
+import SalesAnalyticsPage from "./pages/SalesAnalyticsPage/SalesAnalyticsPage";
 import InventoryPage from "./pages/InventoryPage/InventoryPage";
 import CustomersPage from "./pages/CustomersPage/CustomersPage";
 import ForecastPage from "./pages/ForecastPage/ForecastPage";
@@ -27,7 +24,9 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/analytics" element={<AnalyticsDashboardPage />} />
+          <Route path="/analytics" element={<SalesAnalyticsPage />} />
+          <Route path="/analyticsales" element={<SalesAnalyticsPage />} />
+          <Route path="/analytics/general" element={<AnalyticsDashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/products" element={<ProductsPage />} />
@@ -35,7 +34,6 @@ export default function App() {
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/forecasts" element={<ForecastPage />} />
-          
         </Route>
       </Route>
 

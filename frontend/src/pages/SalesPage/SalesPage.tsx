@@ -360,6 +360,7 @@ function SalesPageContent() {
         }, { subtotal: 0, discount: 0, tax: 0 });
     }, [watchedItems, productsById]);
     const formTotal = billing.subtotal - billing.discount + billing.tax;
+    
     const exportCsv = (sale: Sale) => {
         const rows = [
             ["Invoice Number", sale.invoice_number],
