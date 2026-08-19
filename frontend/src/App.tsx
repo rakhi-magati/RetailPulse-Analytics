@@ -12,6 +12,7 @@ import SalesPage from "./pages/SalesPage/SalesPage";
 import AnalyticsDashboardPage from "./pages/AnalyticsDashboardPage/AnalyticsDashboardPage";
 import SalesAnalyticsPage from "./pages/SalesAnalyticsPage/SalesAnalyticsPage";
 import InventoryPage from "./pages/InventoryPage/InventoryPage";
+import InventoryForecastPage from "./pages/InventoryForecastPage/InventoryForecastPage";
 import CustomersPage from "./pages/CustomersPage/CustomersPage";
 import ForecastPage from "./pages/ForecastPage/ForecastPage";
 
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/sales" element={<SalesPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/inventory/forecast" element={<InventoryForecastPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/forecasts" element={<ForecastPage />} />
         </Route>

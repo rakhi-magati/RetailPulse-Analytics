@@ -14,8 +14,10 @@ from app.schemas.inventory import (
     InventoryOut,
     ReorderLevelUpdate,
     StockAdjustmentCreate,
+    InventoryForecastResponse,
+    InventoryForecastDetail,
 )
-from app.services import inventory_service
+from app.services import inventory_service, inventory_forecast_service
 from app.utils.request_meta import get_client_browser, get_client_ip
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
@@ -46,6 +48,39 @@ def list_inventory(
         sort_by=sort_by,
     )
 
+
+@router.get("/forecast", response_model=InventoryForecastResponse)
+def inventory_forecast(
+    forecast_days: int = Query(30, description="Forecast horizon: 7, 30, or 90 days"),
+    category_id: Optional[int] = None,
+    product_id: Optional[int] = None,
+    stock_risk: Optional[str] = Query(None, pattern="^(OUT_OF_STOCK|STOCKOUT_RISK|LOW_STOCK|HEALTHY|OVERSTOCK)$"),
+    reorder_required: Optional[bool] = None,
+    sort_by: str = Query("stock_risk", pattern="^(current_stock|forecasted_demand|days_remaining|recommended_quantity|stock_risk)$"),
+    db: Session = Depends(get_db), company_id: int = Depends(get_current_company_id), _=ReadAccess,
+):
+    return inventory_forecast_service.build_forecast(
+        db, company_id, forecast_days, category_id, product_id, stock_risk, reorder_required, sort_by
+    )
+
+
+@router.get("/recommendations", response_model=InventoryForecastResponse)
+def inventory_recommendations(
+    forecast_days: int = Query(30), category_id: Optional[int] = None,
+    stock_risk: Optional[str] = None, reorder_required: Optional[bool] = None,
+    db: Session = Depends(get_db), company_id: int = Depends(get_current_company_id), _=ReadAccess,
+):
+    return inventory_forecast_service.build_forecast(
+        db, company_id, forecast_days, category_id, None, stock_risk, reorder_required, "stock_risk"
+    )
+
+
+@router.get("/recommendations/{product_id}", response_model=InventoryForecastDetail)
+def inventory_recommendation_detail(
+    product_id: int, forecast_days: int = Query(30), db: Session = Depends(get_db),
+    company_id: int = Depends(get_current_company_id), _=ReadAccess,
+):
+    return inventory_forecast_service.recommendation_detail(db, company_id, product_id, forecast_days)
 
 @router.get("/dashboard-summary", response_model=InventoryDashboardSummary)
 def dashboard_summary(

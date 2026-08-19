@@ -92,3 +92,40 @@ class StockStatusBreakdownItem(BaseModel):
 class InventoryCharts(BaseModel):
     by_category: List[CategoryBreakdownItem]
     by_stock_status: List[StockStatusBreakdownItem]
+
+class InventoryForecastItem(BaseModel):
+    product_id: int
+    product_name: str
+    sku: str
+    category_id: int
+    category_name: str
+    current_stock: int
+    average_daily_sales: float
+    forecasted_demand: int
+    days_of_stock_remaining: Optional[float] = None
+    reorder_point: int
+    safety_stock: int
+    recommended_reorder_quantity: int
+    stock_risk: str
+    recommendation: str
+    reorder_required: bool
+
+
+class InventoryForecastSummary(BaseModel):
+    products_requiring_reorder: int
+    products_at_stockout_risk: int
+    overstocked_products: int
+    healthy_products: int
+
+
+class InventoryForecastResponse(BaseModel):
+    forecast_days: int
+    lead_time_days: int
+    safety_stock_days: int
+    summary: InventoryForecastSummary
+    items: List[InventoryForecastItem]
+
+
+class InventoryForecastDetail(InventoryForecastItem):
+    projected_stock_after_forecast: int
+    historical_daily_demand: List[dict]

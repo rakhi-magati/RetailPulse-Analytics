@@ -36,6 +36,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
   { label: "Sales Analytics", icon: <AnalyticsIcon />, path: "/analyticsales" },
   { label: "Demand Forecasting", icon: <ForecastIcon />, path: "/forecasts" },
+  { label: "Smart Replenishment", icon: <InventoryIcon />, path: "/inventory/forecast" },
   { label: "Sales", icon: <SalesIcon />, path: "/sales" },
   { label: "Products", icon: <ProductsIcon />, path: "/products" },
   { label: "Categories", icon: <CategoriesIcon />, path: "/categories" },

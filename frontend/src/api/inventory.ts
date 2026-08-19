@@ -7,6 +7,8 @@ import type {
   InventoryMovement,
   ReorderLevelRequest,
   StockAdjustmentRequest,
+  InventoryForecastResponse,
+  InventoryForecastDetail,
 } from "../types/inventory";
 
 export const inventoryApi = {
@@ -44,6 +46,12 @@ export const inventoryApi = {
     apiClient
       .post<InventoryItem>(`/inventory/product/${productId}/adjust`, payload)
       .then((res) => res.data),
+
+  forecast: (params: Record<string, unknown> = {}) =>
+    apiClient.get<InventoryForecastResponse>("/inventory/forecast", { params }).then((res) => res.data),
+
+  recommendation: (productId: number, forecastDays = 30) =>
+    apiClient.get<InventoryForecastDetail>(`/inventory/recommendations/${productId}`, { params: { forecast_days: forecastDays } }).then((res) => res.data),
 
   updateReorderLevel: (productId: number, payload: ReorderLevelRequest) =>
     apiClient

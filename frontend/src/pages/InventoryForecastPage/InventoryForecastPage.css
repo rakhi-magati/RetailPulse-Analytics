@@ -1,0 +1,50 @@
+.replenishment-page {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.replenishment-heading {
+    margin-bottom: 20px;
+}
+
+.replenishment-filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.replenishment-filters .MuiFormControl-root {
+    min-width: 180px;
+}
+
+.replenishment-stat,
+.replenishment-card {
+    padding: 20px;
+    border-radius: 14px !important;
+}
+
+.replenishment-card {
+    margin-bottom: 20px;
+}
+
+.replenishment-empty {
+    min-height: 180px;
+    display: grid;
+    place-items: center;
+    color: #64748b;
+    text-align: center;
+    padding: 16px;
+}
+
+@media (max-width: 600px) {
+    .replenishment-page {
+        padding: 16px;
+    }
+
+    .replenishment-filters .MuiFormControl-root {
+        width: 100%;
+    }
+}

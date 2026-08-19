@@ -90,3 +90,20 @@ export interface InventoryCharts {
   by_category: CategoryBreakdownItem[];
   by_stock_status: StockStatusBreakdownItem[];
 }
+
+export type StockRisk = "OUT_OF_STOCK" | "STOCKOUT_RISK" | "LOW_STOCK" | "HEALTHY" | "OVERSTOCK";
+export interface InventoryForecastItem {
+  product_id: number; product_name: string; sku: string; category_id: number; category_name: string;
+  current_stock: number; average_daily_sales: number; forecasted_demand: number;
+  days_of_stock_remaining: number | null; reorder_point: number; safety_stock: number;
+  recommended_reorder_quantity: number; stock_risk: StockRisk; recommendation: string; reorder_required: boolean;
+}
+export interface InventoryForecastResponse {
+  forecast_days: number; lead_time_days: number; safety_stock_days: number;
+  summary: { products_requiring_reorder: number; products_at_stockout_risk: number; overstocked_products: number; healthy_products: number };
+  items: InventoryForecastItem[];
+}
+export interface InventoryForecastDetail extends InventoryForecastItem {
+  projected_stock_after_forecast: number;
+  historical_daily_demand: { date: string; quantity: number }[];
+}
