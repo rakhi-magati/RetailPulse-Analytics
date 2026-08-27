@@ -47,13 +47,6 @@ import { customersApi } from "../../api/customers";
 import { salesApi } from "../../api/sales";
 import RoleGuard from "../../components/RoleGuard";
 import type { Product } from "../../types/catalog";
-// import type {
-//     PaymentMethod,
-//     SaleCreateRequest,
-//     SaleListItem,
-//     SalesChannel,
-// } from "../../types/sales";
-
 import type { PaymentMethod, PaymentStatus, Sale, SaleCreateRequest, SaleListItem, SalesChannel } from "../../types/sales";
 
 interface ItemFormValues {

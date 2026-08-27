@@ -19,6 +19,7 @@ from app.models.notification import Notification
 from app.models.inventory import Inventory, InventoryMovement
 from app.models.customer import Customer, CustomerPurchaseSummary, CustomerTimeline
 from app.models.demand_forecast import DemandForecast, ForecastHistory
+from app.models.data_import import DataImport, DataImportError
 
 from app.api.auth import router as auth_router
 from app.api.users import router as users_router
@@ -30,6 +31,7 @@ from app.api.inventory import router as inventory_router
 from app.api.analytics import router as analytics_router
 from app.api.customers import router as customers_router
 from app.api.forecasts import router as forecasts_router
+from app.api.data_imports import router as data_imports_router
 
 # Create newly introduced tables, then bring older development databases forward.
 # SQLAlchemy create_all does not add columns to a table that already exists.
@@ -98,6 +100,7 @@ app.include_router(inventory_router)
 app.include_router(analytics_router)
 app.include_router(customers_router)
 app.include_router(forecasts_router)
+app.include_router(data_imports_router)
 
 
 @app.get("/")

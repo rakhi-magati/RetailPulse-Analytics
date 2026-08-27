@@ -22,6 +22,7 @@ import ReportsIcon from "@mui/icons-material/DescriptionOutlined";
 import AlertsIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import UsersIcon from "@mui/icons-material/BadgeOutlined";
 import SettingsIcon from "@mui/icons-material/SettingsOutlined";
+import ImportExportIcon from "@mui/icons-material/ImportExportOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import { useThemeMode } from "../../context/ThemeModeContext";
@@ -42,6 +43,7 @@ const navItems: NavItem[] = [
   { label: "Categories", icon: <CategoriesIcon />, path: "/categories" },
   { label: "Customers", icon: <CustomersIcon />, path: "/customers" },
   { label: "Inventory", icon: <InventoryIcon />, path: "/inventory" },
+  { label: "Data Import", icon: <ImportExportIcon />, path: "/data-import" },
   { label: "Reports", icon: <ReportsIcon />, path: "/dashboard" },
   { label: "Alerts", icon: <AlertsIcon />, path: "/dashboard" },
   { label: "Users", icon: <UsersIcon />, path: "/dashboard" },

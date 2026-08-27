@@ -15,6 +15,7 @@ import InventoryPage from "./pages/InventoryPage/InventoryPage";
 import InventoryForecastPage from "./pages/InventoryForecastPage/InventoryForecastPage";
 import CustomersPage from "./pages/CustomersPage/CustomersPage";
 import ForecastPage from "./pages/ForecastPage/ForecastPage";
+import DataImportPage from "./pages/DataImportPage/DataImportPage";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/inventory/forecast" element={<InventoryForecastPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/forecasts" element={<ForecastPage />} />
+          <Route path="/data-import" element={<DataImportPage />} />
         </Route>
       </Route>
 
