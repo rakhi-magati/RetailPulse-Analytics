@@ -149,7 +149,10 @@ def _apply_movement(
             action=audit_action,
             ip_address=ip_address,
             browser=browser,
-            entity_name=product.name,
+            entity_name=product.name, resource_type="Product", resource_id=product.id,
+            description=f"Stock changed from {previous_quantity} to {new_current_stock}",
+            before_values={"stock_quantity": previous_quantity},
+            after_values={"stock_quantity": new_current_stock},
         )
 
     _notify_status_crossing(db, inventory, product, previous_status, actor, ip_address, browser)

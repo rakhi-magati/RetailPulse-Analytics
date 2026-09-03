@@ -32,11 +32,27 @@ from app.api.analytics import router as analytics_router
 from app.api.customers import router as customers_router
 from app.api.forecasts import router as forecasts_router
 from app.api.data_imports import router as data_imports_router
+from app.api.audit_logs import router as audit_logs_router
 
 # Create newly introduced tables, then bring older development databases forward.
 # SQLAlchemy create_all does not add columns to a table that already exists.
 Base.metadata.create_all(bind=engine)
 
+
+
+def ensure_audit_log_schema() -> None:
+    """Upgrade the original audit table in development databases without losing records."""
+    inspector = inspect(engine)
+    if "audit_logs" not in inspector.get_table_names(): return
+    columns = {column["name"] for column in inspector.get_columns("audit_logs")}
+    additions = {"resource_type": "VARCHAR(100)", "resource_id": "VARCHAR(100)", "description": "VARCHAR(1000)", "user_agent": "VARCHAR(1000)", "before_values": "JSON", "after_values": "JSON", "status": "VARCHAR(30) NOT NULL DEFAULT 'SUCCESS'"}
+    with engine.begin() as connection:
+        for name, column_type in additions.items():
+            if name not in columns: connection.execute(text(f"ALTER TABLE audit_logs ADD COLUMN {name} {column_type}"))
+    indexes = {index["name"] for index in inspect(engine).get_indexes("audit_logs")}
+    with engine.begin() as connection:
+        for name, fields in {"ix_audit_logs_company_created": "company_id, created_at", "ix_audit_logs_company_action": "company_id, action", "ix_audit_logs_company_resource": "company_id, resource_type", "ix_audit_logs_company_user": "company_id, user_id"}.items():
+            if name not in indexes: connection.execute(text(f"CREATE INDEX {name} ON audit_logs ({fields})"))
 
 def ensure_customer_profile_schema() -> None:
     """Add Task 8 customer fields to existing development databases."""
@@ -75,6 +91,7 @@ def ensure_customer_sales_schema() -> None:
 try:
     ensure_customer_profile_schema()
     ensure_customer_sales_schema()
+    ensure_audit_log_schema()
 except Exception:
     logging.getLogger("retailpulse.schema").exception(
         "Customer schema upgrade failed. The application cannot safely start."
@@ -101,6 +118,7 @@ app.include_router(analytics_router)
 app.include_router(customers_router)
 app.include_router(forecasts_router)
 app.include_router(data_imports_router)
+app.include_router(audit_logs_router)
 
 
 @app.get("/")

@@ -98,6 +98,16 @@ def create_product(
         ip_address=ip_address,
         browser=browser,
         entity_name=product.name,
+        resource_type="Product",
+        resource_id=product.id,
+        description=f"Created product {product.name}",
+        after_values={
+            "name": product.name,
+            "sku": product.sku,
+            "unit_price": product.unit_price,
+            "stock_quantity": product.stock_quantity,
+            "status": product.status,
+        },
     )
     return product
 
@@ -155,7 +165,9 @@ def update_product(
         data.stock_quantity is not None and data.stock_quantity != product.stock_quantity
     )
 
-    for field, value in data.model_dump(exclude_unset=True).items():
+    changes = data.model_dump(exclude_unset=True)
+    before_values = {field: getattr(product, field) for field in changes}
+    for field, value in changes.items():
         setattr(product, field, value)
 
     product = product_repository.update(db, product)
@@ -181,7 +193,9 @@ def update_product(
             action=action,
             ip_address=ip_address,
             browser=browser,
-            entity_name=product.name,
+            entity_name=product.name, resource_type="Product", resource_id=product.id,
+            description=f"Updated product {product.name}", before_values=before_values,
+            after_values={field: getattr(product, field) for field in changes},
         )
     else:
         log_action(
@@ -191,7 +205,9 @@ def update_product(
             action=AuditAction.PRODUCT_UPDATED,
             ip_address=ip_address,
             browser=browser,
-            entity_name=product.name,
+            entity_name=product.name, resource_type="Product", resource_id=product.id,
+            description=f"Updated product {product.name}", before_values=before_values,
+            after_values={field: getattr(product, field) for field in changes},
         )
 
     return product
@@ -211,6 +227,7 @@ def set_product_status(
     if product.status == new_status:
         return product
 
+    previous_status = product.status
     product.status = new_status
     product = product_repository.update(db, product)
 
@@ -227,6 +244,11 @@ def set_product_status(
         ip_address=ip_address,
         browser=browser,
         entity_name=product.name,
+        resource_type="Product",
+        resource_id=product.id,
+        description=f"Product status changed from {previous_status} to {new_status}",
+        before_values={"status": previous_status},
+        after_values={"status": new_status},
     )
     return product
 
@@ -242,6 +264,7 @@ def delete_product(
     product = get_product(db, product_id, company_id)
     name = product.name
     inventory_service.delete_for_product(db, product.id)
+    before_values = {"name": product.name, "sku": product.sku, "status": product.status}
     product_repository.delete(db, product)
 
     log_action(
@@ -252,6 +275,10 @@ def delete_product(
         ip_address=ip_address,
         browser=browser,
         entity_name=name,
+        resource_type="Product",
+        resource_id=product_id,
+        description=f"Deleted product {name}",
+        before_values=before_values,
     )
 
 

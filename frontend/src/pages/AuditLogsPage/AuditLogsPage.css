@@ -1,0 +1,231 @@
+﻿.audit-page {
+    max-width: 1450px;
+    margin: 0 auto;
+    padding: 32px 28px 48px
+}
+
+.audit-hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 28px 30px;
+    border-radius: 18px;
+    background: linear-gradient(120deg, #18225a, #4f46e5 58%, #776cf4);
+    color: #fff;
+    box-shadow: 0 14px 30px rgba(79, 70, 229, .2);
+    margin-bottom: 20px
+}
+
+.audit-hero h4 {
+    font-weight: 800;
+    margin: 4px 0
+}
+
+.audit-hero>div>p:last-child {
+    color: rgba(255, 255, 255, .77)
+}
+
+.audit-eyebrow {
+    font-size: 11px !important;
+    letter-spacing: 1.2px;
+    font-weight: 800;
+    color: #c9c4ff
+}
+
+.audit-live {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255, 255, 255, .26);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .1);
+    font-size: 13px;
+    white-space: nowrap
+}
+
+.audit-card {
+    padding: 22px !important;
+    margin-bottom: 20px;
+    border: 1px solid #e5eaf2;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .05) !important
+}
+
+.audit-filter-heading,
+.audit-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px
+}
+
+.audit-filter-heading .MuiButton-root {
+    text-transform: none;
+    font-weight: 700
+}
+
+.audit-filter-grid {
+    display: grid;
+    grid-template-columns: 1.8fr repeat(4, 1fr);
+    gap: 13px
+}
+
+.audit-filter-grid .MuiFormControl-root,
+.audit-filter-grid .MuiTextField-root {
+    min-width: 0
+}
+
+.audit-table-card {
+    padding: 0 !important;
+    overflow: hidden
+}
+
+.audit-table-header {
+    padding: 20px 22px 0
+}
+
+.audit-card .MuiTableHead-root {
+    background: #f8fafc
+}
+
+.audit-card .MuiTableCell-head {
+    font-weight: 750;
+    color: #475569;
+    white-space: nowrap
+}
+
+.audit-row {
+    cursor: pointer
+}
+
+.audit-row:hover {
+    background: #fafbff
+}
+
+.audit-description {
+    max-width: 290px
+}
+
+.audit-action-chip {
+    height: 25px !important;
+    background: #eef2ff !important;
+    color: #4338ca !important;
+    font-size: 11px !important;
+    font-weight: 700 !important
+}
+
+.audit-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-top: 1px solid #e5eaf2
+}
+
+.audit-empty {
+    display: grid;
+    place-items: center;
+    gap: 5px;
+    min-height: 250px;
+    color: #64748b
+}
+
+.audit-empty svg {
+    font-size: 42px;
+    color: #a5b4fc
+}
+
+.audit-change-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px
+}
+
+.audit-change-grid .MuiPaper-root {
+    padding: 16px
+}
+
+.audit-change-grid .MuiPaper-root:first-child {
+    border-top: 3px solid #f59e0b
+}
+
+.audit-change-grid .MuiPaper-root:last-child {
+    border-top: 3px solid #10b981
+}
+
+.audit-value-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px
+}
+
+.audit-value-list>div {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #eef2f7
+}
+
+.audit-value-list span {
+    color: #64748b;
+    font-size: 13px
+}
+
+.audit-value-list strong {
+    font-size: 13px;
+    word-break: break-word;
+    text-align: right
+}
+
+.audit-detail-summary {
+    display: grid;
+    gap: 8px
+}
+
+.audit-detail-summary .MuiChip-root {
+    width: max-content
+}
+
+@media(max-width:1050px) {
+    .audit-filter-grid {
+        grid-template-columns: repeat(3, 1fr)
+    }
+}
+
+@media(max-width:700px) {
+    .audit-page {
+        padding: 16px
+    }
+
+    .audit-hero {
+        padding: 23px;
+        flex-direction: column
+    }
+
+    .audit-live {
+        white-space: normal
+    }
+
+    .audit-filter-grid {
+        grid-template-columns: 1fr
+    }
+
+    .audit-change-grid {
+        grid-template-columns: 1fr
+    }
+
+    .audit-pagination {
+        align-items: flex-start;
+        gap: 10px;
+        flex-direction: column
+    }
+
+    .audit-table-card {
+        overflow-x: auto
+    }
+}

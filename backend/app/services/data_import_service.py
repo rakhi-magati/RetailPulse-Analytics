@@ -5,13 +5,14 @@ from decimal import Decimal, InvalidOperation
 from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from app.core.enums import ProductStatus, UnitOfMeasure
+from app.core.enums import AuditAction, ProductStatus, UnitOfMeasure
 from app.models.category import Category
 from app.models.customer import Customer
 from app.models.data_import import DataImport, DataImportError
 from app.models.inventory import Inventory
 from app.models.product import Product
 from app.models.sale import Sale, SaleItem
+from app.services.audit_service import log_action
 
 MAX_BYTES = 5 * 1024 * 1024
 REQUIRED = {"PRODUCTS": {"product_name","sku","category","unit_price","stock_quantity"}, "CUSTOMERS": {"name","email","phone"}, "SALES": {"customer","product","quantity","unit_price","sale_date"}}
@@ -63,20 +64,25 @@ def serialize(job, columns=None, preview=None, problems=None):
     problems = problems if problems is not None else [{"row_number":e.row_number,"row_data":json.loads(e.row_data),"error_type":e.error_type,"message":e.message} for e in job.errors]
     return {"id":job.id,"import_type":job.import_type,"filename":job.filename,"status":job.status,"total_records":job.total_records,"valid_records":job.valid_records,"successful_records":job.successful_records,"failed_records":job.failed_records,"duplicate_records":job.duplicate_records,"columns":columns or parse(job.source_csv)[0],"preview":preview or parse(job.source_csv)[1][:8],"errors":problems,"created_at":job.created_at,"completed_at":job.completed_at,"uploaded_by_name":job.uploader.name if job.uploader else None}
 
-def upload(db, company_id, user_id, import_type, filename, source):
+def upload(db, company_id, user_id, import_type, filename, source, ip_address="unknown", browser="unknown"):
     if len(source.encode())>MAX_BYTES: raise HTTPException(413,"CSV must be 5 MB or smaller")
     typ=import_type.upper(); columns,rows,problems=validate(db,company_id,typ,source)
     job=DataImport(company_id=company_id,uploaded_by=user_id,import_type=typ,filename=filename,source_csv=source,total_records=len(rows),valid_records=len(rows)-len(problems),failed_records=len(problems),duplicate_records=sum(p["error_type"]=="DUPLICATE" for p in problems))
     db.add(job); db.flush()
     for p in problems: db.add(DataImportError(import_id=job.id,row_number=p["row_number"],row_data=json.dumps(p["row_data"]),error_type=p["error_type"],message=p["message"]))
-    db.commit(); db.refresh(job); return serialize(job,columns,rows[:8],problems)
+    db.commit(); db.refresh(job)
+    log_action(db, company_id, user_id, AuditAction.IMPORT_UPLOADED, ip_address, browser,
+               entity_name=filename, resource_type="DataImport", resource_id=job.id,
+               description=f"Uploaded {typ} import '{filename}' ({len(rows)} records)",
+               after_values={"import_type": typ, "filename": filename, "total_records": len(rows), "valid_records": job.valid_records})
+    return serialize(job,columns,rows[:8],problems)
 
 def get_job(db, company_id, job_id):
     job=db.query(DataImport).filter(DataImport.id==job_id,DataImport.company_id==company_id).first()
     if not job: raise HTTPException(404,"Import not found")
     return job
 
-def process(db, company_id, job_id):
+def process(db, company_id, job_id, user_id, ip_address="unknown", browser="unknown"):
     job=get_job(db,company_id,job_id)
     if job.status!="PENDING": raise HTTPException(409,"This import has already been processed")
     columns,rows,problems=validate(db,company_id,job.import_type,job.source_csv); rejected={p["row_number"] for p in problems}; job.status="PROCESSING"; db.flush(); done=0
@@ -99,4 +105,8 @@ def process(db, company_id, job_id):
         job.successful_records=done; job.failed_records=job.total_records-done; job.status="COMPLETED" if not job.failed_records else "COMPLETED_WITH_ERRORS"; job.completed_at=datetime.now(timezone.utc); db.commit()
     except Exception:
         db.rollback(); job=get_job(db,company_id,job_id); job.status="FAILED"; job.completed_at=datetime.now(timezone.utc); db.commit(); raise HTTPException(500,"Import failed safely; no records were added")
-    return serialize(job,columns,rows[:8],problems)
+    log_action(db, company_id, user_id, AuditAction.IMPORT_COMPLETED, ip_address, browser,
+               entity_name=job.filename, resource_type="DataImport", resource_id=job.id,
+               description=f"Processed {job.import_type} import '{job.filename}'",
+               before_values={"status": "PENDING"},
+               after_values={"status": job.status, "successful_records": job.successful_records, "failed_records": job.failed_records})

@@ -785,7 +785,7 @@ export default function RegisterPage() {
                         <Typography className="register-footer">
                             Already have an account?{" "}
                             <Link
-                                component={RouterLink}
+                                component={RouterLink} 
                                 to="/login"
                             >
                                 Sign in

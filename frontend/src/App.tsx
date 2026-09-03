@@ -16,6 +16,7 @@ import InventoryForecastPage from "./pages/InventoryForecastPage/InventoryForeca
 import CustomersPage from "./pages/CustomersPage/CustomersPage";
 import ForecastPage from "./pages/ForecastPage/ForecastPage";
 import DataImportPage from "./pages/DataImportPage/DataImportPage";
+import AuditLogsPage from "./pages/AuditLogsPage/AuditLogsPage";
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/forecasts" element={<ForecastPage />} />
           <Route path="/data-import" element={<DataImportPage />} />
+          <Route path="/audit-logs" element={<AuditLogsPage />} />
         </Route>
       </Route>
 
