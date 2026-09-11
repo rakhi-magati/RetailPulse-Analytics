@@ -17,6 +17,7 @@ import CustomersPage from "./pages/CustomersPage/CustomersPage";
 import ForecastPage from "./pages/ForecastPage/ForecastPage";
 import DataImportPage from "./pages/DataImportPage/DataImportPage";
 import AuditLogsPage from "./pages/AuditLogsPage/AuditLogsPage";
+import NotificationsPage from "./pages/NotificationsPage/NotificationsPage";
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/forecasts" element={<ForecastPage />} />
           <Route path="/data-import" element={<DataImportPage />} />
           <Route path="/audit-logs" element={<AuditLogsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
 

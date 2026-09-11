@@ -1,0 +1,5 @@
+export type NotificationType = "LOW_STOCK" | "OUT_OF_STOCK" | "STOCKOUT_RISK" | "OVERSTOCK" | "IMPORT_COMPLETED" | "IMPORT_FAILED" | "SALES_ALERT" | "SYSTEM_ALERT" | "STOCK_ADJUSTED" | "CUSTOMER_REGISTERED" | "CUSTOMER_VIP" | "CUSTOMER_FIRST_PURCHASE" | "FORECAST_ALERT";
+export type NotificationPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export interface Notification { id:number; user_id:number|null; product_id:number|null; type:NotificationType; title:string; message:string; priority:NotificationPriority; resource_type:string|null; resource_id:string|null; payload:Record<string, unknown>|null; is_read:boolean; created_at:string; read_at:string|null; expires_at:string|null; }
+export interface NotificationPage { items:Notification[]; total:number; page:number; limit:number; total_pages:number; }
+export interface NotificationFilters { page:number; limit:number; is_read?:boolean; notification_type?:NotificationType; priority?:NotificationPriority; }

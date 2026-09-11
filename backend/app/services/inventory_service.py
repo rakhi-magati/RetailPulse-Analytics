@@ -11,6 +11,7 @@ from app.models.user import User
 from app.repositories import inventory_repository, notification_repository, product_repository
 from app.schemas.inventory import ReorderLevelUpdate, StockAdjustmentCreate
 from app.services.audit_service import log_action
+from app.services.notification_service import evaluate_inventory
 
 ADJUSTMENT_TO_MOVEMENT = {
     AdjustmentType.STOCK_IN: MovementType.STOCK_ADDITION,
@@ -62,49 +63,16 @@ def _notify_status_crossing(
     ip_address: str,
     browser: str,
 ) -> None:
-    if inventory.stock_status == previous_status:
-        return
+    """Evaluate the stock condition after every inventory transition.
 
-    if inventory.stock_status == StockStatus.OUT_OF_STOCK:
-        notification_repository.create(
-            db,
-            Notification(
-                company_id=inventory.company_id,
-                product_id=product.id,
-                type=NotificationType.OUT_OF_STOCK,
-                message=f"{product.name} is now out of stock.",
-            ),
-        )
-        log_action(
-            db,
-            company_id=inventory.company_id,
-            user_id=actor.id,
-            action=AuditAction.PRODUCT_OUT_OF_STOCK,
-            ip_address=ip_address,
-            browser=browser,
-            entity_name=product.name,
-        )
-    elif inventory.stock_status == StockStatus.LOW_STOCK:
-        notification_repository.create(
-            db,
-            Notification(
-                company_id=inventory.company_id,
-                product_id=product.id,
-                type=NotificationType.LOW_STOCK,
-                message=f"{product.name} stock is low ({inventory.available_stock} remaining).",
-            ),
-        )
-        log_action(
-            db,
-            company_id=inventory.company_id,
-            user_id=actor.id,
-            action=AuditAction.PRODUCT_LOW_STOCK,
-            ip_address=ip_address,
-            browser=browser,
-            entity_name=product.name,
-        )
-
-
+    The notification service owns recipient selection, condition lifecycle and
+    deduplication; this method retains audit records for status transitions.
+    """
+    if inventory.stock_status != previous_status:
+        action = AuditAction.PRODUCT_OUT_OF_STOCK if inventory.stock_status == StockStatus.OUT_OF_STOCK else AuditAction.PRODUCT_LOW_STOCK
+        if inventory.stock_status in {StockStatus.OUT_OF_STOCK, StockStatus.LOW_STOCK}:
+            log_action(db, company_id=inventory.company_id, user_id=actor.id, action=action, ip_address=ip_address, browser=browser, entity_name=product.name, resource_type="Product", resource_id=product.id)
+    evaluate_inventory(db, inventory, product)
 def _apply_movement(
     db: Session,
     inventory: Inventory,

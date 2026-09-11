@@ -54,6 +54,32 @@ def ensure_audit_log_schema() -> None:
         for name, fields in {"ix_audit_logs_company_created": "company_id, created_at", "ix_audit_logs_company_action": "company_id, action", "ix_audit_logs_company_resource": "company_id, resource_type", "ix_audit_logs_company_user": "company_id, user_id"}.items():
             if name not in indexes: connection.execute(text(f"CREATE INDEX {name} ON audit_logs ({fields})"))
 
+def ensure_notification_schema() -> None:
+    """Bring the legacy company-wide notification table to the Task 14 contract."""
+    inspector = inspect(engine)
+    if "notifications" not in inspector.get_table_names():
+        return
+    columns = {column["name"] for column in inspector.get_columns("notifications")}
+    additions = {
+        "user_id": "INTEGER NULL", "title": "VARCHAR(255) NULL", "priority": "VARCHAR(20) NOT NULL DEFAULT 'LOW'",
+        "resource_type": "VARCHAR(80) NULL", "resource_id": "VARCHAR(100) NULL", "payload": "JSON NULL",
+        "dedupe_key": "VARCHAR(255) NULL", "read_at": "DATETIME NULL", "expires_at": "DATETIME NULL",
+    }
+    with engine.begin() as connection:
+        for name, column_type in additions.items():
+            if name not in columns:
+                connection.execute(text(f"ALTER TABLE notifications ADD COLUMN {name} {column_type}"))
+    indexes = {index["name"] for index in inspect(engine).get_indexes("notifications")}
+    required_indexes = {
+        "ix_notifications_user_created": "user_id, created_at",
+        "ix_notifications_company_user_read": "company_id, user_id, is_read",
+        "ix_notifications_dedupe": "company_id, user_id, dedupe_key",
+    }
+    with engine.begin() as connection:
+        for name, fields in required_indexes.items():
+            if name not in indexes:
+                connection.execute(text(f"CREATE INDEX {name} ON notifications ({fields})"))
+
 def ensure_customer_profile_schema() -> None:
     """Add Task 8 customer fields to existing development databases."""
     inspector = inspect(engine)
@@ -92,6 +118,7 @@ try:
     ensure_customer_profile_schema()
     ensure_customer_sales_schema()
     ensure_audit_log_schema()
+    ensure_notification_schema()
 except Exception:
     logging.getLogger("retailpulse.schema").exception(
         "Customer schema upgrade failed. The application cannot safely start."

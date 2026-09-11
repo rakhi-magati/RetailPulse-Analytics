@@ -13,6 +13,7 @@ from app.models.inventory import Inventory
 from app.models.product import Product
 from app.models.sale import Sale, SaleItem
 from app.services.audit_service import log_action
+from app.services.notification_service import notify_import_result
 
 MAX_BYTES = 5 * 1024 * 1024
 REQUIRED = {"PRODUCTS": {"product_name","sku","category","unit_price","stock_quantity"}, "CUSTOMERS": {"name","email","phone"}, "SALES": {"customer","product","quantity","unit_price","sale_date"}}
@@ -53,8 +54,8 @@ def validate(db, company_id, import_type, source):
                 if qty<=0 or Decimal(row["unit_price"])<=0: raise ValueError
             except (ValueError,InvalidOperation): problems.append(error(n,row,"Quantity, price, or sale date is invalid")); continue
             product=db.query(Product).filter(Product.company_id==company_id,func.lower(Product.name)==row["product"].lower()).first(); customer=db.query(Customer).filter(Customer.company_id==company_id,func.lower(Customer.full_name)==row["customer"].lower()).first(); invoice=row.get("invoice_number","")
-            if not customer: problems.append(error(n,row,"Customer does not exist"))
-            elif not product: problems.append(error(n,row,"Product does not exist"))
+            if not customer: problems.append(error(n,row,"Customer does not exist in this company. Import the customer first."))
+            elif not product: problems.append(error(n,row,"Product does not exist in this company. Import the product first."))
             elif qty>product.stock_quantity: problems.append(error(n,row,"Quantity exceeds available stock"))
             elif invoice and (invoice in seen or db.query(Sale.id).filter(Sale.company_id==company_id,Sale.invoice_number==invoice).first()): problems.append(error(n,row,"Duplicate invoice number", "DUPLICATE"))
             if invoice: seen.add(invoice)
@@ -104,9 +105,11 @@ def process(db, company_id, job_id, user_id, ip_address="unknown", browser="unkn
             done+=1
         job.successful_records=done; job.failed_records=job.total_records-done; job.status="COMPLETED" if not job.failed_records else "COMPLETED_WITH_ERRORS"; job.completed_at=datetime.now(timezone.utc); db.commit()
     except Exception:
-        db.rollback(); job=get_job(db,company_id,job_id); job.status="FAILED"; job.completed_at=datetime.now(timezone.utc); db.commit(); raise HTTPException(500,"Import failed safely; no records were added")
+        db.rollback(); job=get_job(db,company_id,job_id); job.status="FAILED"; job.completed_at=datetime.now(timezone.utc); db.commit(); notify_import_result(db, job); raise HTTPException(500,"Import failed safely; no records were added")
     log_action(db, company_id, user_id, AuditAction.IMPORT_COMPLETED, ip_address, browser,
                entity_name=job.filename, resource_type="DataImport", resource_id=job.id,
                description=f"Processed {job.import_type} import '{job.filename}'",
                before_values={"status": "PENDING"},
                after_values={"status": job.status, "successful_records": job.successful_records, "failed_records": job.failed_records})
+    notify_import_result(db, job)
+    return serialize(job)
